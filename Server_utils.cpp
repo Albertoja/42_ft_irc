@@ -11,14 +11,14 @@ ClientData& Server::find_ClientData_Nickname(std::string str)
     return clients_vec.back();
 }
 
-std::vector<ClientData>::iterator	Server::find_ClientData_Socket(int fd)
+ClientData	*Server::find_ClientData_Socket(int fd)
 {
     for (std::vector<ClientData>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
     {
 		if ((it)->getSocket() == fd)
-			return (it);
+			return (&(*it));
 	}
-	return (clients_vec.end());
+	return (NULL);
 }
 
 char *getIP()
@@ -102,12 +102,19 @@ void	sendToUser(ClientData *targetUser, std::string message)
 		throw std::invalid_argument(" > Error at sendToUser() ");
 }
 
-void	Server::deleteClient(size_t socket_num, std::vector<ClientData>::iterator it_client)
+void	Server::deleteClient(size_t socket_num, ClientData *it_client)
 {
     std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
     close(_sockets[socket_num].fd);
     _sockets.erase(_sockets.begin() + socket_num);
-    clients_vec.erase(it_client);
+    for (std::vector<ClientData>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
+    {
+        if (&(*it) == it_client)
+        {
+            clients_vec.erase(it);
+            break; // Detener la iteración una vez que se haya encontrado y eliminado el cliente
+        }
+    }
     it_client->~ClientData();
 }
 

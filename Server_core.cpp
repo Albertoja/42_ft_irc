@@ -75,8 +75,8 @@ int Server::ReceiveDataClient(size_t socket_num, char *buffer)
     std::string str;
     str.assign(buffer, 0, bytes);
     std::vector<std::string> args = splitString(str, " \r\n");
-    std::vector<ClientData>::iterator it_client = find_ClientData_Socket(_sockets[socket_num].fd);
-    if(it_client == clients_vec.end())
+    ClientData *it_client = find_ClientData_Socket(_sockets[socket_num].fd);
+    if(it_client == NULL)
     {
         std::cerr << "ERROR not in socket list" << std::endl;
         return(1);
@@ -89,7 +89,7 @@ int Server::ReceiveDataClient(size_t socket_num, char *buffer)
     else
     {
         std::cout << it_client->getNickName() << " : " << str << std::endl;
-        if(processCommand(args, *it_client, socket_num, it_client) != 0)
+        if(processCommand(args, it_client, socket_num) != 0)
             return(2);
         return(0);
     }

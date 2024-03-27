@@ -56,10 +56,9 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
     return 1;
 }
 
-int Server::processCommand(std::vector<std::string> args, ClientData &client, size_t socket_num, std::vector<ClientData>::iterator it_client) 
+int Server::processCommand(std::vector<std::string> args, ClientData *client, size_t socket_num) 
 {
-    std::cerr << "login = " << client.getLoginName() << std::endl;
-    std::cerr << "login = " << it_client->getLoginName() << std::endl;
+    std::cerr << "login = " << client->getLoginName() << std::endl;
     if (!args.empty()) 
     {
         std::string ircCommand = args[0];
@@ -68,22 +67,22 @@ int Server::processCommand(std::vector<std::string> args, ClientData &client, si
         {
             ChannelData *chan = findChannel(args[1]);
             if (chan == NULL)
-                sendToUser(&client, makeUserMsg(&client, ERR_CANNOTSENDTOCHAN, "Especifica un canal valido"));
+                sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "Especifica un canal valido"));
             else
             {
                 std::string joinCommand = "JOIN " + args[1] + "\r\n";
                 send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
-                chan->addUser(&client, "pass");
-                chan->sendToChannel(&client, makeChanMsg(&client, "JOIN", chan->getChannelName()));
-                chan->updateMemberList(&client);
+                chan->addUser(client, "pass");
+                chan->sendToChannel(client, makeChanMsg(client, "JOIN", chan->getChannelName()));
+                chan->updateMemberList(client);
             }
         } 
         else if (ircCommand == "PRIVMSG") 
         {
             if(args[1][0] == '#')
-                processChanMsg(args, &client);
+                processChanMsg(args, client);
             else
-                send_PersonalMessage(args, &client);
+                send_PersonalMessage(args, client);
 
         }
         else if(ircCommand == "SU")
@@ -93,17 +92,17 @@ int Server::processCommand(std::vector<std::string> args, ClientData &client, si
             su_pass.pop_back();
             su_pass.pop_back();
             if(my_pass.compare(su_pass) != 0)
-                sendToUser(&client, makeUserMsg(&client, ERR_NOTREGISTERED, "Contraseña del superusuario erronea"));
+                sendToUser(client, makeUserMsg(client, ERR_NOTREGISTERED, "Contraseña del superusuario erronea"));
             else
             {
-                it_client->setSuper(true);
-                sendToUser(&client, makeUserMsg(&client, RPL_TRACENEWTYPE, "SUPERUSUARIO"));
-                std::cout << BLUE << client.getNickName() << " ahora es superusuario" << NOCOLOR << std::endl;
+                client->setSuper(true);
+                sendToUser(client, makeUserMsg(client, RPL_TRACENEWTYPE, "SUPERUSUARIO"));
+                std::cout << BLUE << client->getNickName() << " ahora es superusuario" << NOCOLOR << std::endl;
             }
         }
         else if(ircCommand == "QUIT")
         {
-            deleteClient(socket_num, it_client);
+            deleteClient(socket_num, client);
         }
         else if(ircCommand == "ENDSERVER")
         {
@@ -112,7 +111,7 @@ int Server::processCommand(std::vector<std::string> args, ClientData &client, si
         }
         else 
         {
-            sendToUser(&client, makeUserMsg(&client, RPL_NONE, "Unrecognized command"));
+            sendToUser(client, makeUserMsg(client, RPL_NONE, "Unrecognized command"));
             std::cout << "Unrecognized command: " << ircCommand << std::endl;
         }
     }
