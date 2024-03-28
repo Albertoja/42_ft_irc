@@ -35,7 +35,7 @@ class Server
         void send_PersonalMessage(std::vector<std::string> args, ClientData *sender);
         void send_ChannelMessage(std::vector<std::string> args, ClientData *sender);
         std::string	makePrivMsg(ClientData *sender, ClientData *receiver , std::string input);
-        ClientData& find_ClientData_Nickname(std::string str);
+        ClientData *find_ClientData_Nickname(std::string str);
         ClientData	*findUser(std::string str);
         std::vector<std::string> splitString(std::string str, const char *dlmtrs);
         void sendWelcomeMessageToUser(ClientData* client);
@@ -50,8 +50,8 @@ class Server
         std::string _port;
         std::string _pass;
         std::string _supass;
-        std::vector<ClientData> clients_vec;
-        std::vector<ChannelData> channel_vec;
+        std::vector<ClientData*> clients_vec;
+        std::vector<ChannelData*> channel_vec;
         std::vector<pollfd>		_sockets;
         bool _ServerStatus;
         bool _CloseServer;

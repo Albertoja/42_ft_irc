@@ -37,7 +37,7 @@ int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket
     _sockets.push_back(pollfd());
     _sockets.back().fd = client_socket;
     _sockets.back().events = POLLIN;
-    ClientData client(client_socket);
+    ClientData* client = new ClientData(client_socket);
     for(int i = 0; i < 3; i++)
     {
         int bytes_received = recv(client_socket, buffer, BUFFER_SIZE, 0);
@@ -52,7 +52,7 @@ int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket
             args.clear();
             continue;
         }
-        if(firstCommand(args, &client) != 0)
+        if(firstCommand(args, client) != 0)
         {
             _sockets.erase(_sockets.end() - 1);
             close(client_socket);
@@ -64,7 +64,7 @@ int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket
     }
     std::cout << GREEN << "New user connected :)" << NOCOLOR << std::endl;
     clients_vec.push_back(client);
-    sendWelcomeMessageToUser(&client);
+    sendWelcomeMessageToUser(client);
     return 0;
 }
 
@@ -97,18 +97,21 @@ int Server::ReceiveDataClient(size_t socket_num, char *buffer)
 
 void Server::CloseServer()
 {
+    for(size_t channel_num = 0; channel_num < channel_vec.size(); channel_num++)
+        channel_vec[channel_num]->~ChannelData();
     for(size_t socket_num = 0; socket_num < _sockets.size(); socket_num++)
         close(_sockets[socket_num].fd);
     _sockets.clear();
     for(size_t client_num = 0; client_num < clients_vec.size(); client_num++)
-        clients_vec[client_num].~ClientData();
+        clients_vec[client_num]->~ClientData();
     clients_vec.clear();
     std::cout << RED << "||Close server||" << NOCOLOR << std::endl;
 }
 
 void Server::createChanels()
 {
-    ChannelData todos("#todos", "Channel for all");
+    
+    ChannelData *todos = new ChannelData("#todos", "Channel for all");
 
     channel_vec.push_back(todos);
 }

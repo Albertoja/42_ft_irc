@@ -36,15 +36,14 @@ class ChannelData
 
 		//FUNCTIONS
 		
-		void	sendToChannel(ClientData *client, std::string message);
+		void	sendToChannel(ClientData *client, std::string message, bool sendToSender);
 		bool	isChanOp(ClientData *client);
 		void    makeUserOP(ClientData *OP, ClientData *client);
 		void    changeTopic(ClientData *client, std::string newtopic);
 		void    addUser(ClientData *client, std::string pass);
         void    printTopic(ClientData *client);
 		bool	hasMember (ClientData *client);
-		void    updateMemberList(ClientData *client);
-		
+		bool 	deleteUser(ClientData *client);
 	private:
 
 		bool		_inviteOnly;
@@ -54,7 +53,7 @@ class ChannelData
 		std::string _ChannelName;
 		std::string _pass;
 		std::string _topic;
-		std::vector<ClientData> _clientsVec;
+		std::vector<ClientData*> _clientsVec;
 		std::vector<ClientData> _operatorsVec;
 
 

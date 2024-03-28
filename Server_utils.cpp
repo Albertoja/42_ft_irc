@@ -1,22 +1,21 @@
 #include "Server.hpp"
 
-ClientData& Server::find_ClientData_Nickname(std::string str)
+ClientData *Server::find_ClientData_Nickname(std::string str)
 {
-    for (std::vector<ClientData>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
+    for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
     {
-        if (it->getNickName() == str)
-            return *it; // Devuelve una referencia a la clase ClientData encontrada
+        if ((*it)->getNickName() == str)
+            return (*it);
     }
-    // Si no se encuentra ninguna coincidencia, devuelve una referencia al último elemento (equivalente a end())
     return clients_vec.back();
 }
 
 ClientData	*Server::find_ClientData_Socket(int fd)
 {
-    for (std::vector<ClientData>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
+    for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
     {
-		if ((it)->getSocket() == fd)
-			return (&(*it));
+		if ((*it)->getSocket() == fd)
+			return (*it);
 	}
 	return (NULL);
 }
@@ -97,7 +96,6 @@ std::string	makeUserMsg01(ClientData *user, std::string input)
 void	sendToUser(ClientData *targetUser, std::string message)
 {
 	std::ostringstream debug;
-	//std::cerr << "OUTGOING USER_MSG TO : " << targetUser->getNickName() << " :\n" << message; 
 	if (send(targetUser->getFd(), message.c_str(), message.size(), 0) < 0)
 		throw std::invalid_argument(" > Error at sendToUser() ");
 }
@@ -107,12 +105,12 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
     std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
     close(_sockets[socket_num].fd);
     _sockets.erase(_sockets.begin() + socket_num);
-    for (std::vector<ClientData>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
+    for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
     {
-        if (&(*it) == it_client)
+        if (*it == it_client)
         {
             clients_vec.erase(it);
-            break; // Detener la iteración una vez que se haya encontrado y eliminado el cliente
+            break;
         }
     }
     it_client->~ClientData();
@@ -140,12 +138,12 @@ void Server::send_PersonalMessage(std::vector<std::string> args, ClientData *sen
         }
     }
 
-    for (std::vector<ClientData>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
+    for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
     {
-        if (it->getNickName() == name)
+        if ((*it)->getNickName() == name)
         {
-            ClientData &receiver = *it; // Devuelve una referencia a la clase ClientData encontrada
-            sendToUser(&receiver, makePrivMsg(sender, &receiver, message));
+            ClientData *receiver = *it;
+            sendToUser(receiver, makePrivMsg(sender, receiver, message));
             return ;
         } 
     }
@@ -213,9 +211,9 @@ std::vector<std::string>	Server::splitString(std::string str, const char *dlmtrs
 
 ChannelData	*Server::findChannel(std::string str)
 {
-    for (std::vector<ChannelData>::iterator it = this->channel_vec.begin(); it != this->channel_vec.end(); it++)
-        if (it->getChannelName() == str)
-            return(&(*it));
+    for (std::vector<ChannelData*>::iterator it = this->channel_vec.begin(); it != this->channel_vec.end(); it++)
+        if ((*it)->getChannelName() == str)
+            return(*it);
 	return (NULL);
 }
 
@@ -223,7 +221,7 @@ void	Server::processChanMsg(std::vector<std::string> args, ClientData *sender)
 {
 	ChannelData *chan = findChannel(args[1]);
     std::string message;
-    for (size_t i = 2; i < args.size(); ++i) 
+    for (size_t i = 0; i < args.size(); ++i) 
     {
         message += args[i];
         if (i < args.size() - 1) {
@@ -237,20 +235,20 @@ void	Server::processChanMsg(std::vector<std::string> args, ClientData *sender)
 		if (!chan->hasMember(sender))
 			sendToUser(sender, makeUserMsg(sender, ERR_CANNOTSENDTOCHAN, "You are not in this channel"));
 		else
-			chan->sendToChannel(sender, makeChanMsg(sender, message));
+			chan->sendToChannel(sender, makeChanMsg(sender, message), false);
 	}
 }
 
 std::string	Server::makeChanMsg(ClientData *client, std::string input)
 {
 	std::ostringstream 	message;
-	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << getIP() << " " << input << "\r\n";
+	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << client->getHostname() << " " << input << "\r\n";
 	return (message.str());
 }
 
 std::string	Server::makeChanMsg(ClientData *client, std::string code, std::string input)
 {
 	std::ostringstream 	message;
-	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << getIP() << " " << code << " " << input << "\r\n";
+	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << client->getHostname() << " " << code << " " << input << "\r\n";
 	return (message.str());
 }

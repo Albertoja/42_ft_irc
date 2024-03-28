@@ -2,11 +2,11 @@
 
 ClientData	*Server::findUser(std::string str)
 {
-    for (std::vector<ClientData>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
+    for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
     {
-        if (it->getNickName() == str)
+        if ((*it)->getNickName() == str)
         {
-            return &(*it); // Devuelve un puntero a la instancia de ClientData en el vector
+            return (*it); // Devuelve un puntero a la instancia de ClientData en el vector
         }
     }
     return nullptr; // Devuelve nullptr si no se encuentra el usuario

@@ -28,9 +28,9 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
         else if(ircCommand == "NICK")
         {
             std::string newNickName = args[1];
-            for (std::vector<ClientData>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
+            for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
             {
-                if (it->getNickName() == newNickName)
+                if ((*it)->getNickName() == newNickName)
                 {
                     std::cerr << RED << "The user tried to connect with an already registered nickname" << NOCOLOR << std::endl;
                     return(1);
@@ -58,7 +58,6 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
 
 int Server::processCommand(std::vector<std::string> args, ClientData *client, size_t socket_num) 
 {
-    std::cerr << "login = " << client->getLoginName() << std::endl;
     if (!args.empty()) 
     {
         std::string ircCommand = args[0];
@@ -73,8 +72,7 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
                 std::string joinCommand = "JOIN " + args[1] + "\r\n";
                 send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
                 chan->addUser(client, "pass");
-                chan->sendToChannel(client, makeChanMsg(client, "JOIN", chan->getChannelName()));
-                chan->updateMemberList(client);
+                chan->sendToChannel(client, makeChanMsg(client, "JOIN", chan->getChannelName()), true);
             }
         } 
         else if (ircCommand == "PRIVMSG") 
@@ -108,6 +106,19 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
         {
             CloseServer();
             return (1);
+        }
+        else if(ircCommand == "PART")
+        {
+            ChannelData *chan = findChannel(args[1]);
+            if(chan == NULL)
+                sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "Especifica un canal valido"));
+            else
+            {
+                if(!(chan->deleteUser(client)))
+                    sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "No eres miembro de ese canal"));
+                else
+                    chan->sendToChannel(client, makeChanMsg(client, "PART", chan->getChannelName()), true);
+            }
         }
         else 
         {

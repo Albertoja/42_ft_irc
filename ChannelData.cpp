@@ -50,9 +50,9 @@ void    ChannelData::addUser(ClientData *client, std::string pass)
 			return;
 	}
 
-	for (std::vector<ClientData>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
+	for (std::vector<ClientData*>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
 	{
-		if (&(*it) == client)
+		if ((*it) == client)
 		{
 			sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User allready in the channel"));
 			return;
@@ -64,10 +64,10 @@ void    ChannelData::addUser(ClientData *client, std::string pass)
 		if (pass.empty())
 			sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "No password provided"));
 		else if(this->_pass == pass)
-			this->_clientsVec.push_back(*client);
+			this->_clientsVec.push_back(client);
 	}
 	else
-		this->_clientsVec.push_back(*client);
+		this->_clientsVec.push_back(client);
 }
 
 void    ChannelData::printTopic(ClientData *client)
@@ -117,56 +117,38 @@ std::string	makePrivMsg(ClientData *sender, ClientData *receiver , std::string i
 }
 
 
-void	ChannelData::sendToChannel(ClientData *client, std::string message)
+void	ChannelData::sendToChannel(ClientData *client, std::string message, bool sendToSender)
 {
-	for (std::vector<ClientData>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
+	for (std::vector<ClientData*>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
 	{
-		std::ostringstream debug;
-		debug << "OUTGOING CHAN_MSG TO : " << it->getNickName() << " :\n" << message;
-		//debugPrint(MAGENTA, debug.str());									
-		if (!(&(*it) == client))
+		std::ostringstream debug;								
+		if ((*it) != client || sendToSender)
 		{
-			int fd = it->getFd();
-
-			std::cerr << RED << "fd = " << fd << NOCOLOR << std::endl;
-			std::cerr << RED << "mensaje = " << message << NOCOLOR << std::endl;
-			if (send(it->getFd(), message.c_str(), message.size(), 0) < 0)
+			if (send((*it)->getFd(), message.c_str(), message.size(), 0) < 0)
 				throw std::invalid_argument(" > Error at sendToChan() ");
 		}
 	}
-
-	// for (std::vector<ClientData>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
-	// {
-	// 	sendToUser(&(*it), makePrivMsg(client, &(*it), message));
-	// }
-	//sendToUser(client, makeUserMsg(client, ERR_ERRONEUSNICKNAME, "The client you want to send the message to does not exist"));
 }
 
 bool	ChannelData::hasMember(ClientData *client)
 {
-	for (std::vector<ClientData>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
+	for (std::vector<ClientData*>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
 	{
-		if (client->getNickName() == it->getNickName())
+		if (client->getNickName() == (*it)->getNickName())
 			return (true);
 	}
 	return (false);
 }
 
-void	ChannelData::updateMemberList(ClientData *client)
+bool 	ChannelData::deleteUser(ClientData *client)
 {
-	std::string memberList;
-	for (std::vector<ClientData>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
+		for (std::vector<ClientData*>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
 	{
-		if (!(&(*it) == client))
-			memberList += it->getNickName() + " ";
+		if (client->getNickName() == (*it)->getNickName())
+		{
+			this->_clientsVec.erase(it);
+			return (true);
+		}
 	}
-	std::ostringstream message;
-
-	message << ":" << client->getNickName() << "!" << client->getRealName() << "@" << client->getHostname() << " " << "\r\n";
-	message << ": " << RPL_TOPIC << " " << client->getRealName() << " " << this->getChannelName() << " :" << this->getTopic() << "\r\n";
-	message << ": " << RPL_NAMREPLY << " " << client->getRealName() << " = " << this->getChannelName() << " :" << memberList << "\r\n";
-	message << ": " << RPL_ENDOFNAMES << " " << client->getRealName() << " " << this->getChannelName() << " :" << "End of NAMES list" << "\r\n";
-
-	this->sendToChannel(client, message.str());
+	return (false);
 }
-
