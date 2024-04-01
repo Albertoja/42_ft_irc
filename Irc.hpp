@@ -26,7 +26,12 @@
 # include <cstring>
 # include <csignal>
 
+class ClientData;
+class Server;
+class ChannelData;
+
 # include "ClientData.hpp"
+# include "ChannelData.hpp"
 # include "Server.hpp"
 
 # include "Codes.hpp"
@@ -41,6 +46,7 @@
 # define MIN_PORT 1023
 # define MAX_PORT 65535
 # define PASSLEN 100
+
 
 
 

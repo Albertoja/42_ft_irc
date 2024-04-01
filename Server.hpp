@@ -2,15 +2,12 @@
 # define SERVER_HPP
 
 #include "Irc.hpp"
-#include "ChannelData.hpp"
+
 
 
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
 #define HOSTLEN 64
-
-class ClientData;
-class ChannelData;
 
 class Server
 {
@@ -22,6 +19,7 @@ class Server
         bool CheckPassword(std::string buffer);
         bool CheckNickName(char* buffer);
         int processCommand(std::vector<std::string> args, ClientData *client, size_t socket_num);
+        int processCommandOper(std::vector<std::string> args, ClientData *client);
         int firstCommand(std::vector<std::string> args, ClientData *client);
         int suCommand(const std::string& command, std::vector<ClientData>::iterator it_client);
         //int inChannelCmds(const std::string& command, ClientData &client, size_t socket_num, std::vector<ClientData>::iterator it_client);
@@ -42,8 +40,7 @@ class Server
         void createChanels();
         void processChanMsg(std::vector<std::string> args, ClientData *sender);
         ChannelData	*findChannel(std::string str);
-        std::string makeChanMsg(ClientData *client, std::string input);
-        std::string	makeChanMsg(ClientData *client, std::string code, std::string input);
+
     private:
         Server(const Server &other);
         Server	&operator=(const Server &other);
@@ -62,4 +59,6 @@ class Server
 void sendToUser(ClientData *targetUser, std::string message);
 std::string makeUserMsg(ClientData *user, std::string code, std::string input);
 std::string	makeUserMsg01(ClientData *user, std::string input);
+std::string makeChanMsg(ClientData *client, std::string input);
+std::string	makeChanMsg(ClientData *client, std::string code, std::string input);
 #endif

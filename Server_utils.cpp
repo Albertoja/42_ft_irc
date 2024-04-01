@@ -1,5 +1,6 @@
 #include "Server.hpp"
 
+
 ClientData *Server::find_ClientData_Nickname(std::string str)
 {
     for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
@@ -7,7 +8,7 @@ ClientData *Server::find_ClientData_Nickname(std::string str)
         if ((*it)->getNickName() == str)
             return (*it);
     }
-    return clients_vec.back();
+    return NULL;
 }
 
 ClientData	*Server::find_ClientData_Socket(int fd)
@@ -103,6 +104,13 @@ void	sendToUser(ClientData *targetUser, std::string message)
 void	Server::deleteClient(size_t socket_num, ClientData *it_client)
 {
     std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
+    for (std::vector<ChannelData*>::iterator it = channel_vec.begin(); it != channel_vec.end(); ++it)
+    {
+        if((*it)->deleteUser(it_client))
+        {
+            std::cerr << RED << "Client " << it_client->getNickName() << " left the channel " << (*it)->getChannelName() << NOCOLOR << std::endl;
+        }
+    }
     close(_sockets[socket_num].fd);
     _sockets.erase(_sockets.begin() + socket_num);
     for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
@@ -239,14 +247,14 @@ void	Server::processChanMsg(std::vector<std::string> args, ClientData *sender)
 	}
 }
 
-std::string	Server::makeChanMsg(ClientData *client, std::string input)
+std::string	makeChanMsg(ClientData *client, std::string input)
 {
 	std::ostringstream 	message;
 	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << client->getHostname() << " " << input << "\r\n";
 	return (message.str());
 }
 
-std::string	Server::makeChanMsg(ClientData *client, std::string code, std::string input)
+std::string	makeChanMsg(ClientData *client, std::string code, std::string input)
 {
 	std::ostringstream 	message;
 	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << client->getHostname() << " " << code << " " << input << "\r\n";

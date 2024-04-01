@@ -18,6 +18,7 @@ ChannelData &ChannelData::operator=(const ChannelData &other)
 	return(*this);
 }
 
+
 //Getters
 
 std::string ChannelData::getChannelName() { return _ChannelName; }
@@ -26,6 +27,7 @@ bool ChannelData::hasTopicRestrictions() { return _topicRestrictions; }
 bool ChannelData::hasPasswordRestrictions() { return _passwordRestrictions; }
 int  ChannelData::getServerLimit() { return _serverlimit; }
 std::string ChannelData::getTopic() { return _topic; }
+std::string ChannelData::getPass() {return _pass;}
 
 //Seters
 
@@ -34,7 +36,27 @@ void ChannelData::setInviteOnly(bool inviteOnly) { _inviteOnly = inviteOnly;}
 void ChannelData::setTopicRestrictions(bool topicRestrictions) { _topicRestrictions = topicRestrictions;}
 void ChannelData::setPasswordRestrictions(bool passwordRestrictions) {_passwordRestrictions = passwordRestrictions;}
 void ChannelData::setServerLimit(int serverLimit) {_serverlimit= serverLimit;}
-
+void ChannelData::setTopic(std::string newTopic) {_topic = newTopic;}
+void ChannelData::setOper()
+{
+	if (_clientsVec.empty())
+		return;
+	else
+	{
+		if(_operatorsVec.empty())
+		{
+			_operatorsVec.push_back(_clientsVec[0]);
+			this->sendToChannel(_clientsVec[0], makeChanMsg(_clientsVec[0], "MODE " + this->getChannelName(), "+o " + _clientsVec[0]->getNickName()), true);
+			return;
+		}
+	}
+}
+void ChannelData::setOper(ClientData *client)
+{
+	_operatorsVec.push_back(client);
+	this->sendToChannel(client, makeChanMsg(client, "MODE " + this->getChannelName(), "+o " + client->getNickName()), true);
+	return;
+}
 //Functions
 
 void    ChannelData::addUser(ClientData *client, std::string pass)
@@ -67,7 +89,10 @@ void    ChannelData::addUser(ClientData *client, std::string pass)
 			this->_clientsVec.push_back(client);
 	}
 	else
+	{
 		this->_clientsVec.push_back(client);
+		setOper();
+	}
 }
 
 void    ChannelData::printTopic(ClientData *client)
@@ -86,25 +111,7 @@ void    ChannelData::changeTopic(ClientData *client, std::string newtopic)
 		sendToUser(client, makeUserMsg(client, ERR_NOPRIVILEGES, "Error: This server does not allow to change the topic"));
 }
 
-void    ChannelData::makeUserOP(ClientData *OP, ClientData *client)
-{
-	if(this->isChanOp(OP))
-	{
-		sendToUser(client, makeUserMsg(client, RPL_USERHOST, "Client is now operator"));
-		sendToUser(OP, makeUserMsg(client, RPL_USERHOST, "You are now operator"));
-		this->_operatorsVec.push_back(*client);
-	}
-	else
-		sendToUser(client, makeUserMsg(OP, ERR_NOPRIVILEGES, "Error: You are not an OP"));
-}
 
-bool	ChannelData::isChanOp(ClientData *client)
-{
-	for (std::vector<ClientData>::iterator it = this->_operatorsVec.begin(); it != this->_operatorsVec.end(); it++)
-		if (&(*it) == client)
-			return (true);
-	return (false);
-}
 
 std::string	makePrivMsg(ClientData *sender, ClientData *receiver , std::string input)
 {
@@ -125,7 +132,7 @@ void	ChannelData::sendToChannel(ClientData *client, std::string message, bool se
 		if ((*it) != client || sendToSender)
 		{
 			if (send((*it)->getFd(), message.c_str(), message.size(), 0) < 0)
-				throw std::invalid_argument(" > Error at sendToChan() ");
+				throw std::invalid_argument(" > Error at sendToChannel() ");
 		}
 	}
 }
@@ -147,8 +154,19 @@ bool 	ChannelData::deleteUser(ClientData *client)
 		if (client->getNickName() == (*it)->getNickName())
 		{
 			this->_clientsVec.erase(it);
+			setOper();
 			return (true);
 		}
+	}
+	return (false);
+}
+
+bool ChannelData::isChanOp(ClientData *client)
+{
+	for (std::vector<ClientData*>::iterator it = this->_operatorsVec.begin(); it != this->_operatorsVec.end(); it++)
+	{
+		if ((*it) == client)
+			return (true);
 	}
 	return (false);
 }

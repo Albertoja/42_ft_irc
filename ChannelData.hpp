@@ -3,10 +3,6 @@
 
 #include "Irc.hpp"
 
-
-class ClientData;
-class Server;
-
 class ChannelData 
 {
 	public:
@@ -24,6 +20,9 @@ class ChannelData
 		void setTopicRestrictions(bool topicRestrictions);
 		void setPasswordRestrictions(bool passwordRestrictions);
 		void setServerLimit(int serverLimit);
+		void setTopic(std::string newTopic);
+		void setOper();
+		void setOper(ClientData *client);
 
 		//GETTERS
 		std::string getChannelName();
@@ -33,12 +32,12 @@ class ChannelData
 		bool hasPasswordRestrictions();
 		int getServerLimit();
 		std::string getTopic();
+		std::string getPass();
 
 		//FUNCTIONS
 		
 		void	sendToChannel(ClientData *client, std::string message, bool sendToSender);
 		bool	isChanOp(ClientData *client);
-		void    makeUserOP(ClientData *OP, ClientData *client);
 		void    changeTopic(ClientData *client, std::string newtopic);
 		void    addUser(ClientData *client, std::string pass);
         void    printTopic(ClientData *client);
@@ -54,9 +53,7 @@ class ChannelData
 		std::string _pass;
 		std::string _topic;
 		std::vector<ClientData*> _clientsVec;
-		std::vector<ClientData> _operatorsVec;
-
-
+		std::vector<ClientData*> _operatorsVec;
 };
 
 #endif

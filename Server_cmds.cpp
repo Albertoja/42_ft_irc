@@ -56,8 +56,149 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
     return 1;
 }
 
+int Server::processCommandOper(std::vector<std::string> args, ClientData *client)
+{
+    
+    if (!args.empty()) 
+    {
+        ClientData *client_to = find_ClientData_Nickname(args[2]);
+        std::string ircCommand = args[0];
+        if (ircCommand == "KICK")
+        {
+            ChannelData *chan = findChannel(args[1]);
+            if (args.size() < 3)
+		        sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
+            else if (chan == NULL)
+		        sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
+            else if(client_to == NULL)
+                sendToUser(client, makeUserMsg(client, ERR_NOSUCHNICK, "Member does not exist"));
+            else if (!(chan->hasMember(client_to)))
+		        sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User is not in channel"));
+            else if (!chan->isChanOp(client))
+                sendToUser(client, makeUserMsg(client, ERR_CHANOPRIVSNEEDED, "Operator permissions needed"));
+            else
+            {
+                chan->sendToChannel(client_to, makeChanMsg(client, "KICK", chan->getChannelName() + " " + client_to->getNickName() + " :" + client->getNickName()), true);
+                //sendToUser(client_to, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "they kicked you out of the channel"));
+		        chan->deleteUser(client_to);
+            }
+            return (1);
+        }
+        else if(ircCommand == "INVITE")
+        {
+            ChannelData *chan = findChannel(args[1]);
+            if (args.size() < 3)
+		        sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
+            else if (chan == NULL)
+		        sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
+            else if(client_to == NULL)
+                sendToUser(client, makeUserMsg(client, ERR_NOSUCHNICK, "Member does not exist"));
+            else if ((chan->hasMember(client_to)))
+		        sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User is already in channel"));
+            else if (!chan->isChanOp(client))
+                sendToUser(client, makeUserMsg(client, ERR_CHANOPRIVSNEEDED, "Operator permissions needed"));
+            else
+            {
+                sendToUser(client_to, makeUserMsg(client, "INVITE", args[1]));
+                std::string joinCommand = "JOIN " + args[1] + "\r\n";
+                send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
+                chan->addUser(client_to, chan->getPass());
+                chan->sendToChannel(client_to, makeChanMsg(client_to, "JOIN", chan->getChannelName()), true);
+            }
+            return (1);
+        }
+        else if (ircCommand == "TOPIC")
+        {
+            ChannelData *chan = findChannel(args[1]);
+            if (args.size() < 2)
+                sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
+            else if(args.size() == 2)
+            {
+                if (chan == NULL)
+                    sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
+                else if (!(chan->hasMember(client)))
+                    sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User is not in channel"));
+                chan->printTopic(client);
+            }
+            else if (args.size() > 2)
+            {
+                if (chan == NULL)
+                    sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
+                else if (!chan->isChanOp(client) && chan->hasTopicRestrictions() == true)
+                    sendToUser(client, makeUserMsg(client, ERR_CHANOPRIVSNEEDED, "Operator permissions needed"));
+                else
+                {
+                    std::string newTopic;
+                    for (size_t i = 2; i < args.size(); ++i) 
+                    {
+                        newTopic += args[i];
+                        if (i < args.size() - 1) {
+                            newTopic += " ";
+                        }
+                    }
+                    if (newTopic.size() > 0 && newTopic[0] == ':')
+                        newTopic = newTopic.substr(1);
+                    chan->setTopic(newTopic);
+                }
+            }
+            return (1);
+        }
+        else if (ircCommand == "MODE")
+        {
+            ChannelData *chan = findChannel(args[1]);
+            if (args.size() < 3)
+                sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
+            else if (chan == NULL)
+                sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
+            else if (!chan->isChanOp(client))
+                sendToUser(client, makeUserMsg(client, ERR_CHANOPRIVSNEEDED, "Operator permissions needed"));
+            else if (args[2] == "i")
+            {
+                if(chan->isInviteOnly() == true)
+                    chan->setInviteOnly(false);
+                else if(chan->isInviteOnly() == false)
+                    chan->setInviteOnly(true);
+            }
+            else if(args[2] == "t")
+            {
+                if(chan->hasTopicRestrictions() == true)
+                    chan->setTopicRestrictions(false);
+                else if(chan->hasTopicRestrictions() == false)
+                    chan->setTopicRestrictions(true);
+            }
+            else if(args[2] == "k")
+            {
+                if(chan->hasPasswordRestrictions() == true)
+                    chan->setPasswordRestrictions(false);
+                else if(chan->hasPasswordRestrictions() == false)
+                    chan->setPasswordRestrictions(true);
+            }
+            else if(args[2] == "o")
+            {            
+                ClientData *client_to = find_ClientData_Nickname(args[3]);
+                if (args.size() < 4)
+                    sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
+                else if (client_to == NULL)
+                    sendToUser(client, makeUserMsg(client, ERR_NOSUCHNICK, "Member does not exist"));
+                else if (!(chan->hasMember(client_to)))
+		            sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User is not in channel"));
+                else if (chan->isChanOp(client_to))
+                    sendToUser(client, makeUserMsg(client, ERR_CHANOPRIVSNEEDED, "User is already an operator"));
+                else
+                    chan->setOper(client_to);
+            }
+
+        }
+        
+        
+    }
+    return (0);
+}
+
 int Server::processCommand(std::vector<std::string> args, ClientData *client, size_t socket_num) 
 {
+    if(processCommandOper(args, client) == 1)
+        return (0);
     if (!args.empty()) 
     {
         std::string ircCommand = args[0];
@@ -66,7 +207,7 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
         {
             ChannelData *chan = findChannel(args[1]);
             if (chan == NULL)
-                sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "Especifica un canal valido"));
+                sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
             else
             {
                 std::string joinCommand = "JOIN " + args[1] + "\r\n";
@@ -82,21 +223,6 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
             else
                 send_PersonalMessage(args, client);
 
-        }
-        else if(ircCommand == "SU")
-        {
-            std::string su_pass = args[1];
-            std::string my_pass = _supass;
-            su_pass.pop_back();
-            su_pass.pop_back();
-            if(my_pass.compare(su_pass) != 0)
-                sendToUser(client, makeUserMsg(client, ERR_NOTREGISTERED, "Contraseña del superusuario erronea"));
-            else
-            {
-                client->setSuper(true);
-                sendToUser(client, makeUserMsg(client, RPL_TRACENEWTYPE, "SUPERUSUARIO"));
-                std::cout << BLUE << client->getNickName() << " ahora es superusuario" << NOCOLOR << std::endl;
-            }
         }
         else if(ircCommand == "QUIT")
         {
