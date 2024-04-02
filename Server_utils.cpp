@@ -229,8 +229,11 @@ void	Server::processChanMsg(std::vector<std::string> args, ClientData *sender)
 {
 	ChannelData *chan = findChannel(args[1]);
     std::string message;
+    if(args[2][0] != ':')
+        args[2] = ":" + args[2];
     for (size_t i = 0; i < args.size(); ++i) 
     {
+        std::cout << args[i] << std::endl;
         message += args[i];
         if (i < args.size() - 1) {
             message += " ";
@@ -250,13 +253,13 @@ void	Server::processChanMsg(std::vector<std::string> args, ClientData *sender)
 std::string	makeChanMsg(ClientData *client, std::string input)
 {
 	std::ostringstream 	message;
-	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << getIP() << " " << input << "\r\n";
+    message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << getIP() << " " << input << "\r\n";
 	return (message.str());
 }
 
 std::string	makeChanMsg(ClientData *client, std::string code, std::string input)
 {
 	std::ostringstream 	message;
-	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << getIP() << " " << code << " " << input << "\r\n";
+    message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << getIP() << " " << code << " " << input << "\r\n";
 	return (message.str());
 }

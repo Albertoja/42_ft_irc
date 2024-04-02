@@ -142,7 +142,11 @@ int Server::Start()
     while (RunServer)
     {
         if(poll(&_sockets[0], _sockets.size(), 1000) == -1 && RunServer)
-            std::cerr << RED << "Error poll" << NOCOLOR << std::endl;
+        {
+            std::cerr << RED << "Error. Unable to poll incoming connections." << NOCOLOR << std::endl;
+            CloseServer();
+            return 1;
+        }
         for(size_t socket_num = 0; socket_num < _sockets.size(); socket_num++)
         {
             char buffer[BUFFER_SIZE];

@@ -5,7 +5,6 @@
 int Server::firstCommand(std::vector<std::string> args, ClientData *client) 
 {
     std::vector<ClientData*>::iterator it;
-
     if (!args.empty()) 
     {
         std::string ircCommand = args[0];
