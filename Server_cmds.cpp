@@ -250,14 +250,19 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
                 sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
             else
             {
-                std::string joinCommand = "JOIN " + args[1] + "\r\n";
-                send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
-                if(args.size() < 3)
-                    chan->addUser(client, "", false);
-                else
-                    chan->addUser(client, args[2], false);
                 if(chan->hasMember(client))
-                    chan->sendToChannel(client, makeChanMsg(client, "JOIN", chan->getChannelName()), true);
+                    sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User allready in the channel"));
+                else
+                {
+                    std::string joinCommand = "JOIN " + args[1] + "\r\n";
+                    send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
+                    if(args.size() < 3)
+                        chan->addUser(client, "", false);
+                    else
+                        chan->addUser(client, args[2], false);
+                    if(chan->hasMember(client))
+                        chan->sendToChannel(client, makeChanMsg(client, "JOIN", chan->getChannelName()), true);
+                }
             }
         } 
         else if (ircCommand == "PRIVMSG") 
@@ -266,7 +271,6 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
                 processChanMsg(args, client);
             else
                 send_PersonalMessage(args, client);
-
         }
         else if(ircCommand == "QUIT")
         {
@@ -287,7 +291,9 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
                 if(!(chan->deleteUser(client)))
                     sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "You are not a member of that channel"));
                 else
+                {
                     chan->sendToChannel(client, makeChanMsg(client, "PART", chan->getChannelName()), true);
+                }
             }
         }
         else 

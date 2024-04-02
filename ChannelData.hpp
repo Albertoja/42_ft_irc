@@ -43,6 +43,7 @@ class ChannelData
         void    printTopic(ClientData *client);
 		bool	hasMember (ClientData *client);
 		bool 	deleteUser(ClientData *client);
+		void 	deleteUserOper(ClientData *client);
 	private:
 
 		bool		_inviteOnly;

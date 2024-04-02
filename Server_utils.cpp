@@ -250,13 +250,13 @@ void	Server::processChanMsg(std::vector<std::string> args, ClientData *sender)
 std::string	makeChanMsg(ClientData *client, std::string input)
 {
 	std::ostringstream 	message;
-	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << client->getHostname() << " " << input << "\r\n";
+	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << getIP() << " " << input << "\r\n";
 	return (message.str());
 }
 
 std::string	makeChanMsg(ClientData *client, std::string code, std::string input)
 {
 	std::ostringstream 	message;
-	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << client->getHostname() << " " << code << " " << input << "\r\n";
+	message << ":" << client->getNickName() << "!" << client->getLoginName() << "@" << getIP() << " " << code << " " << input << "\r\n";
 	return (message.str());
 }

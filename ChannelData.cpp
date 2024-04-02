@@ -159,17 +159,12 @@ bool	ChannelData::hasMember(ClientData *client)
 
 bool 	ChannelData::deleteUser(ClientData *client)
 {
-	// for (std::vector<ClientData*>::iterator it = this->_operatorsVec.begin(); it != this->_operatorsVec.end(); it++)
-	// {
-	// 	if (client->getNickName() == (*it)->getNickName())
-	// 	{
-	// 		this->_operatorsVec.erase(it);
-	// 	}
-	// }
+	
 	for (std::vector<ClientData*>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
 	{
 		if (client->getNickName() == (*it)->getNickName())
 		{
+			this->deleteUserOper(*it);
 			this->_clientsVec.erase(it);
 			setOper();
 			return (true);
@@ -186,4 +181,20 @@ bool ChannelData::isChanOp(ClientData *client)
 			return (true);
 	}
 	return (false);
+}
+ 
+void 	ChannelData::deleteUserOper(ClientData *client)
+{
+	if(!_operatorsVec.empty())
+	{
+		for (std::vector<ClientData*>::iterator it = this->_operatorsVec.begin(); it != this->_operatorsVec.end(); it++)
+		{
+			if ((*it) == client)
+			{
+				this->_operatorsVec.erase(it);
+				this->sendToChannel(_clientsVec[0], makeChanMsg(_clientsVec[0], "MODE " + this->getChannelName(), "-o " + _clientsVec[0]->getNickName()), true);
+				return;
+			}
+		}
+	}
 }
