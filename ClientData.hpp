@@ -19,8 +19,7 @@ public:
     void setRealName(std::string newRealName);
     void setHost(std::string host);
     void setService(std::string service);
-    void setSuper(bool i);
-    void setLastMsg(std::string msg);
+    void setClientAddr(sockaddr_in clientAddr);
 
     //GETTERS
     int getSocket();
@@ -29,8 +28,7 @@ public:
     std::string getLoginName();
     std::string getRealName();
     std::string getHostname();
-    bool        getSuper();
-    std::string getLastMsg		(void) const;
+    sockaddr_in getClientAddr();
 
 private:
     bool        _super;
@@ -41,6 +39,7 @@ private:
     std::string	_host;
     std::string	_service;
     std::string	_lastMsg;
+    sockaddr_in _clientAddr;
 };
 
 #endif

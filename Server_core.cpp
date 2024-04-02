@@ -62,6 +62,7 @@ int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket
         }
         args.clear();
     }
+    //client->setHost(inet_ntoa(client->_clientAddr.sin_addr));
     std::cout << GREEN << "New user connected :)" << NOCOLOR << std::endl;
     clients_vec.push_back(client);
     sendWelcomeMessageToUser(client);
@@ -99,6 +100,7 @@ void Server::CloseServer()
 {
     for(size_t channel_num = 0; channel_num < channel_vec.size(); channel_num++)
         channel_vec[channel_num]->~ChannelData();
+    channel_vec.clear();
     for(size_t socket_num = 0; socket_num < _sockets.size(); socket_num++)
         close(_sockets[socket_num].fd);
     _sockets.clear();
@@ -111,9 +113,18 @@ void Server::CloseServer()
 void Server::createChanels()
 {
     
-    ChannelData *todos = new ChannelData("#todos", "Channel for all", "passtodos");
-
-    channel_vec.push_back(todos);
+    ChannelData *all = new ChannelData("#all", "A public channel where everyone is welcome to engage in discussions on various topics.", "passall");
+    channel_vec.push_back(all);
+    ChannelData *news = new ChannelData("#news", "Stay updated with current news and events.", "passnews");
+    channel_vec.push_back(news);
+    ChannelData *cars = new ChannelData("#cars", "Dive into discussions about automobiles and everything related to cars.", "passcars");
+    channel_vec.push_back(cars);
+    ChannelData *music = new ChannelData("#music", "Explore the latest music releases and share your favorite tunes.", "passmusic");
+    channel_vec.push_back(music);
+    ChannelData *games = new ChannelData("#games", "Join the gaming community to discuss video games and the latest releases.", "passgames");
+    channel_vec.push_back(games);
+    ChannelData *movies= new ChannelData("#movies", "Delve into conversations about classic films and cinematic masterpieces.", "passmovies");
+    channel_vec.push_back(movies);
 }
 
 int Server::Start()

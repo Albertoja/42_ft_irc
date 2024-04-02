@@ -159,7 +159,14 @@ bool	ChannelData::hasMember(ClientData *client)
 
 bool 	ChannelData::deleteUser(ClientData *client)
 {
-		for (std::vector<ClientData*>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
+	// for (std::vector<ClientData*>::iterator it = this->_operatorsVec.begin(); it != this->_operatorsVec.end(); it++)
+	// {
+	// 	if (client->getNickName() == (*it)->getNickName())
+	// 	{
+	// 		this->_operatorsVec.erase(it);
+	// 	}
+	// }
+	for (std::vector<ClientData*>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
 	{
 		if (client->getNickName() == (*it)->getNickName())
 		{

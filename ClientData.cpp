@@ -13,11 +13,10 @@ void		ClientData::setService(std::string service) { _service = service; }
 void 		ClientData::setNickName(std::string newNickName){this->_NickName = newNickName;}
 void 		ClientData::setLoginName(std::string newLoginName){this->_LoginName = newLoginName;}
 void 		ClientData::setRealName(std::string newRealName){this->_RealName = newRealName;}
-void		ClientData::setSuper(bool i) { _super = i; }
+void 		ClientData::setClientAddr(sockaddr_in clientAddr){this->_clientAddr = clientAddr;}
 int 		ClientData::getSocket(){return _socket;}
 int 		ClientData::getFd(){return _socket;}
-bool		ClientData::getSuper() { return (_super); }
-std::string	ClientData::getLastMsg(void) const	{ return (this->_lastMsg); }
+sockaddr_in		ClientData::getClientAddr(){return _clientAddr;}
 ClientData &ClientData::operator=(const ClientData &other)
 {
     if (this != &other)
@@ -47,17 +46,7 @@ int	ClientData::CreateClientData(int fd, struct sockaddr * addr, socklen_t addrl
 			hoststring.erase(HOSTLEN, std::string::npos);
 	temp->setHost(hoststring);
 	temp->setService(std::string (service));
+	
 
 	return (0);
-}
-
-void		ClientData::setLastMsg(std::string msg)
-{
-	if (msg.empty())
-	{
-		if (!this->_lastMsg.empty())
-			this->_lastMsg.clear();
-	}
-	else
-		this->_lastMsg = msg;
 }

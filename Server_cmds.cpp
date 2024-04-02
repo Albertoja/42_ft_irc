@@ -217,6 +217,11 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
                 else
                 {
                     int newMax = atoi(args[3].c_str());
+                    if(newMax < 1 || newMax > INT_MAX)
+                    {
+                        sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Error in maximun number of users"));
+                        return(1);
+                    }
                     chan->setServerLimit(newMax);
                     std::stringstream ss;
                     ss << newMax;
@@ -225,9 +230,7 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
                 }
             }
             return (1);
-        }
-        
-        
+        }    
     }
     return (0);
 }
@@ -278,11 +281,11 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
         {
             ChannelData *chan = findChannel(args[1]);
             if(chan == NULL)
-                sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "Especifica un canal valido"));
+                sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "Specify a valid channel"));
             else
             {
                 if(!(chan->deleteUser(client)))
-                    sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "No eres miembro de ese canal"));
+                    sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "You are not a member of that channel"));
                 else
                     chan->sendToChannel(client, makeChanMsg(client, "PART", chan->getChannelName()), true);
             }
