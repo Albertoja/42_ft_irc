@@ -3,7 +3,7 @@
 ChannelData::ChannelData(){}
 ChannelData::ChannelData(const ChannelData &other){*this = other;}
 ChannelData::~ChannelData(){}
-ChannelData::ChannelData(std::string ChannelName, std::string topic) : _ChannelName(ChannelName), _topic(topic) 
+ChannelData::ChannelData(std::string ChannelName, std::string topic, std::string pass) : _ChannelName(ChannelName), _topic(topic), _pass(pass)
 { 
 	_inviteOnly = false;            // i:  Set/remove Invite-only channel
 	_topicRestrictions = false;     // t:  Set/remove the restrictions of the TOPIC command to channel operator
@@ -59,17 +59,15 @@ void ChannelData::setOper(ClientData *client)
 }
 //Functions
 
-void    ChannelData::addUser(ClientData *client, std::string pass)
+void    ChannelData::addUser(ClientData *client, std::string pass, bool invite)
 {
 	if(this->_serverlimit > 0)
 	{
-		if(this->_clientsVec.size() > (size_t)this->_serverlimit)
+		if(this->_clientsVec.size() >= (size_t)this->_serverlimit)
 		{
 			sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Server is full"));
-			 this->_serverlimit++;
-		}
-		else
 			return;
+		}
 	}
 
 	for (std::vector<ClientData*>::iterator it = this->_clientsVec.begin(); it != this->_clientsVec.end(); it++)
@@ -80,11 +78,23 @@ void    ChannelData::addUser(ClientData *client, std::string pass)
 			return;
 		}
 	}
-
+	if(invite)
+	{
+		this->_clientsVec.push_back(client);
+		setOper();
+		return;
+	}
+	if(this->isInviteOnly() == true)
+	{
+		sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "You need an invitation to enter this channel"));
+		return;
+	}
 	if(this->hasPasswordRestrictions())
 	{
 		if (pass.empty())
 			sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "No password provided"));
+		else if(this->_pass != pass)
+			sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Wrong password"));
 		else if(this->_pass == pass)
 			this->_clientsVec.push_back(client);
 	}

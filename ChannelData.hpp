@@ -8,7 +8,7 @@ class ChannelData
 	public:
 
 		ChannelData();
-		ChannelData(std::string ChannelName, std::string topic);
+		ChannelData(std::string ChannelName, std::string topic, std::string pass);
 		~ChannelData();
 		ChannelData(const ChannelData &other);
 		ChannelData	&operator=(const ChannelData &other);
@@ -39,7 +39,7 @@ class ChannelData
 		void	sendToChannel(ClientData *client, std::string message, bool sendToSender);
 		bool	isChanOp(ClientData *client);
 		void    changeTopic(ClientData *client, std::string newtopic);
-		void    addUser(ClientData *client, std::string pass);
+		void    addUser(ClientData *client, std::string pass, bool invite);
         void    printTopic(ClientData *client);
 		bool	hasMember (ClientData *client);
 		bool 	deleteUser(ClientData *client);
@@ -50,8 +50,8 @@ class ChannelData
 		bool		_passwordRestrictions;
 		int			_serverlimit;
 		std::string _ChannelName;
-		std::string _pass;
 		std::string _topic;
+		std::string _pass;
 		std::vector<ClientData*> _clientsVec;
 		std::vector<ClientData*> _operatorsVec;
 };

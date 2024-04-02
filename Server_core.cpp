@@ -111,7 +111,7 @@ void Server::CloseServer()
 void Server::createChanels()
 {
     
-    ChannelData *todos = new ChannelData("#todos", "Channel for all");
+    ChannelData *todos = new ChannelData("#todos", "Channel for all", "passtodos");
 
     channel_vec.push_back(todos);
 }

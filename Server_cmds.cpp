@@ -79,7 +79,6 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
             else
             {
                 chan->sendToChannel(client_to, makeChanMsg(client, "KICK", chan->getChannelName() + " " + client_to->getNickName() + " :" + client->getNickName()), true);
-                //sendToUser(client_to, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "they kicked you out of the channel"));
 		        chan->deleteUser(client_to);
             }
             return (1);
@@ -102,7 +101,7 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
                 sendToUser(client_to, makeUserMsg(client, "INVITE", args[1]));
                 std::string joinCommand = "JOIN " + args[1] + "\r\n";
                 send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
-                chan->addUser(client_to, chan->getPass());
+                chan->addUser(client_to, chan->getPass(), true);
                 chan->sendToChannel(client_to, makeChanMsg(client_to, "JOIN", chan->getChannelName()), true);
             }
             return (1);
@@ -155,23 +154,41 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
             else if (args[2] == "i")
             {
                 if(chan->isInviteOnly() == true)
+                {
                     chan->setInviteOnly(false);
+                    chan->sendToChannel(client, makeChanMsg(client, "MODE " + chan->getChannelName(), "Invite Only disabled"), true);
+                }
                 else if(chan->isInviteOnly() == false)
+                {
                     chan->setInviteOnly(true);
+                    chan->sendToChannel(client, makeChanMsg(client, "MODE " + chan->getChannelName(), "Invite Only enabled"), true);
+                }
             }
             else if(args[2] == "t")
             {
                 if(chan->hasTopicRestrictions() == true)
+                {
                     chan->setTopicRestrictions(false);
+                    chan->sendToChannel(client, makeChanMsg(client, "MODE " + chan->getChannelName(), "Topic Restrictions disabled"), true);
+                }
                 else if(chan->hasTopicRestrictions() == false)
+                {
                     chan->setTopicRestrictions(true);
+                    chan->sendToChannel(client, makeChanMsg(client, "MODE " + chan->getChannelName(), "Topic Restrictions enabled"), true);
+                }
             }
             else if(args[2] == "k")
             {
                 if(chan->hasPasswordRestrictions() == true)
+                {
                     chan->setPasswordRestrictions(false);
+                    chan->sendToChannel(client, makeChanMsg(client, "MODE " + chan->getChannelName(), "Password Restrictions disabled"), true);
+                }
                 else if(chan->hasPasswordRestrictions() == false)
+                {
                     chan->setPasswordRestrictions(true);
+                    chan->sendToChannel(client, makeChanMsg(client, "MODE " + chan->getChannelName(), "Password Restrictions enabled"), true);
+                }
             }
             else if(args[2] == "o")
             {            
@@ -185,9 +202,29 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
                 else if (chan->isChanOp(client_to))
                     sendToUser(client, makeUserMsg(client, ERR_CHANOPRIVSNEEDED, "User is already an operator"));
                 else
-                    chan->setOper(client_to);
+                {
+                    chan->sendToChannel(client, makeChanMsg(client, "MODE " + chan->getChannelName(), (client_to->getNickName() + " was appointed operator")), true);
+                    chan->setOper(client_to);  
+                }
             }
-
+            else if(args[2] == "l")
+            {
+                if (args.size() < 4)
+                {
+                    chan->setServerLimit(-1);
+                    chan->sendToChannel(client, makeChanMsg(client, "MODE " + chan->getChannelName(), "There is no maximum number of users for this channel"), true);
+                }
+                else
+                {
+                    int newMax = atoi(args[3].c_str());
+                    chan->setServerLimit(newMax);
+                    std::stringstream ss;
+                    ss << newMax;
+                    std::string num_str = ss.str();
+                    chan->sendToChannel(client, makeChanMsg(client, "MODE " + chan->getChannelName(), "The new maximum number of users is " + num_str), true);
+                }
+            }
+            return (1);
         }
         
         
@@ -212,8 +249,12 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
             {
                 std::string joinCommand = "JOIN " + args[1] + "\r\n";
                 send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
-                chan->addUser(client, "pass");
-                chan->sendToChannel(client, makeChanMsg(client, "JOIN", chan->getChannelName()), true);
+                if(args.size() < 3)
+                    chan->addUser(client, "", false);
+                else
+                    chan->addUser(client, args[2], false);
+                if(chan->hasMember(client))
+                    chan->sendToChannel(client, makeChanMsg(client, "JOIN", chan->getChannelName()), true);
             }
         } 
         else if (ircCommand == "PRIVMSG") 
