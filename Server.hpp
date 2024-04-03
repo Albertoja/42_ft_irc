@@ -24,9 +24,11 @@ class Server
         int suCommand(const std::string& command, std::vector<ClientData>::iterator it_client);
         //int inChannelCmds(const std::string& command, ClientData &client, size_t socket_num, std::vector<ClientData>::iterator it_client);
         ClientData *find_ClientData_Socket(int fd);
+        ClientData	*find_ClientData_Socket_login(int fd);
         //void sendToUser(ClientData *targetUser, std::string message);
-        int CreateNewUser(struct sockaddr_storage client_addr, int server_socket, char *buffer);
+        int CreateNewUser(struct sockaddr_storage client_addr, int server_socket);
         int ReceiveDataClient(size_t socket_num, char *buffer);
+        int ReceiveDataClient_login(size_t socket_num, std::vector<std::string> args);
         void deleteClient(size_t socket_num, ClientData *it_client);
         void CloseServer();
         static void CloseServer01();;
@@ -40,6 +42,7 @@ class Server
         void createChanels();
         void processChanMsg(std::vector<std::string> args, ClientData *sender);
         ChannelData	*findChannel(std::string str);
+        void checkFirst(ClientData *client);
 
     private:
         Server(const Server &other);
@@ -48,6 +51,7 @@ class Server
         std::string _pass;
         std::string _supass;
         std::vector<ClientData*> clients_vec;
+        std::vector<ClientData*> clients_vec_login;
         std::vector<ChannelData*> channel_vec;
         std::vector<pollfd>		_sockets;
         bool _ServerStatus;

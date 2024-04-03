@@ -1,22 +1,28 @@
 #include "ClientData.hpp"
 
 ClientData::ClientData(){}
-ClientData::ClientData(int socket) : _socket(socket){_super = false;}
+ClientData::ClientData(int socket) : _socket(socket), _isLogin(false), _firstLogin(true), _pass(""), _NickName(""), _LoginName(""){}
 ClientData::ClientData(const ClientData &other){*this = other;}
 ClientData::~ClientData(){}
-std::string ClientData::getNickName(){return _NickName;}
-std::string ClientData::getLoginName(){return _LoginName;}
-std::string ClientData::getRealName(){return _RealName;}
-std::string ClientData::getHostname(){return _host;}
-void		ClientData::setHost(std::string host) { _host = host; }
-void		ClientData::setService(std::string service) { _service = service; }
-void 		ClientData::setNickName(std::string newNickName){this->_NickName = newNickName;}
-void 		ClientData::setLoginName(std::string newLoginName){this->_LoginName = newLoginName;}
-void 		ClientData::setRealName(std::string newRealName){this->_RealName = newRealName;}
-void 		ClientData::setClientAddr(sockaddr_in clientAddr){this->_clientAddr = clientAddr;}
-int 		ClientData::getSocket(){return _socket;}
-int 		ClientData::getFd(){return _socket;}
+void			ClientData::setHost(std::string host) { _host = host; }
+void			ClientData::setService(std::string service) { _service = service; }
+void 			ClientData::setNickName(std::string newNickName){this->_NickName = newNickName;}
+void 			ClientData::setLoginName(std::string newLoginName){this->_LoginName = newLoginName;}
+void 			ClientData::setRealName(std::string newRealName){this->_RealName = newRealName;}
+void 			ClientData::setClientAddr(sockaddr_in clientAddr){this->_clientAddr = clientAddr;}
+void			ClientData::setisLogin(bool login){this->_isLogin = login;}
+void			ClientData::setfirstLogin(bool login){this->_firstLogin = login;}
+void			ClientData::setPass(std::string pass){this->_pass = pass;}
+std::string 	ClientData::getNickName(){return _NickName;}
+std::string 	ClientData::getLoginName(){return _LoginName;}
+std::string 	ClientData::getRealName(){return _RealName;}
+std::string 	ClientData::getHostname(){return _host;}
+int 			ClientData::getSocket(){return _socket;}
+int 			ClientData::getFd(){return _socket;}
 sockaddr_in		ClientData::getClientAddr(){return _clientAddr;}
+bool        	ClientData::getisLogin(){return _isLogin;}
+bool        	ClientData::getfirstLogin(){return _firstLogin;}
+std::string		ClientData::getPass(){return _pass;}
 ClientData &ClientData::operator=(const ClientData &other)
 {
     if (this != &other)

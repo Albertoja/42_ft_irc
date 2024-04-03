@@ -8,7 +8,7 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
     if (!args.empty()) 
     {
         std::string ircCommand = args[0];
-        if(ircCommand == "PASS")
+        if(ircCommand == "PASS" && client->getPass() == "")
         { 
             std::string tryPass = args[1];
             std::string myPass = _pass;
@@ -20,11 +20,11 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
             }
             else
             {
+                client->setPass(myPass);
                 std::cerr << "password correct!" << std::endl;
-                return 0;
             }
         }
-        else if(ircCommand == "NICK")
+        else if(ircCommand == "NICK" && client->getNickName() == "")
         {
             std::string newNickName = args[1];
             for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
@@ -35,16 +35,16 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
                     return(1);
                 }
             }
+            std::cerr << "nick corect!" << std::endl;
             client->setNickName(newNickName);
-            return 0;
         }
-        else if(ircCommand == "USER")
+        else if(ircCommand == "USER" && client->getLoginName() == "")
         {
             std::string newLogin = args[1];
             std::string newReal = args[4];
             client->setLoginName(newLogin);
             client->setRealName(newReal);
-            return 0;
+            std::cerr << "login correct!" << std::endl;
         }
         else 
         {
@@ -52,7 +52,7 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
             return 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 int Server::processCommandOper(std::vector<std::string> args, ClientData *client)
@@ -236,70 +236,70 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
 
 int Server::processCommand(std::vector<std::string> args, ClientData *client, size_t socket_num) 
 {
-    if(processCommandOper(args, client) == 1)
-        return (0);
-    if (!args.empty()) 
-    {
-        std::string ircCommand = args[0];
+        if(processCommandOper(args, client) == 1)
+            return (0);
+        if (!args.empty()) 
+        {
+            std::string ircCommand = args[0];
 
-        if (ircCommand == "JOIN") 
-        {
-            ChannelData *chan = findChannel(args[1]);
-            if (chan == NULL)
-                sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
-            else
+            if (ircCommand == "JOIN") 
             {
-                if(chan->hasMember(client))
-                    sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User allready in the channel"));
+                ChannelData *chan = findChannel(args[1]);
+                if (chan == NULL)
+                    sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
                 else
                 {
-                    std::string joinCommand = "JOIN " + args[1] + "\r\n";
-                    send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
-                    if(args.size() < 3)
-                        chan->addUser(client, "", false);
-                    else
-                        chan->addUser(client, args[2], false);
                     if(chan->hasMember(client))
-                        chan->sendToChannel(client, makeChanMsg(client, "JOIN", chan->getChannelName()), true);
+                        sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User allready in the channel"));
+                    else
+                    {
+                        std::string joinCommand = "JOIN " + args[1] + "\r\n";
+                        send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
+                        if(args.size() < 3)
+                            chan->addUser(client, "", false);
+                        else
+                            chan->addUser(client, args[2], false);
+                        if(chan->hasMember(client))
+                            chan->sendToChannel(client, makeChanMsg(client, "JOIN", chan->getChannelName()), true);
+                    }
                 }
-            }
-        } 
-        else if (ircCommand == "PRIVMSG") 
-        {
-            if(args[1][0] == '#')
-                processChanMsg(args, client);
-            else
-                send_PersonalMessage(args, client);
-        }
-        else if(ircCommand == "QUIT")
-        {
-            deleteClient(socket_num, client);
-        }
-        else if(ircCommand == "ENDSERVER")
-        {
-            CloseServer();
-            return (1);
-        }
-        else if(ircCommand == "PART")
-        {
-            ChannelData *chan = findChannel(args[1]);
-            if(chan == NULL)
-                sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "Specify a valid channel"));
-            else
+            } 
+            else if (ircCommand == "PRIVMSG") 
             {
-                if(!(chan->deleteUser(client)))
-                    sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "You are not a member of that channel"));
+                if(args[1][0] == '#')
+                    processChanMsg(args, client);
+                else
+                    send_PersonalMessage(args, client);
+            }
+            else if(ircCommand == "QUIT")
+            {
+                deleteClient(socket_num, client);
+            }
+            else if(ircCommand == "ENDSERVER")
+            {
+                CloseServer();
+                return (1);
+            }
+            else if(ircCommand == "PART")
+            {
+                ChannelData *chan = findChannel(args[1]);
+                if(chan == NULL)
+                    sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "Specify a valid channel"));
                 else
                 {
-                    chan->sendToChannel(client, makeChanMsg(client, "PART", chan->getChannelName()), true);
+                    if(!(chan->deleteUser(client)))
+                        sendToUser(client, makeUserMsg(client, ERR_CANNOTSENDTOCHAN, "You are not a member of that channel"));
+                    else
+                    {
+                        chan->sendToChannel(client, makeChanMsg(client, "PART", chan->getChannelName()), true);
+                    }
                 }
             }
+            else 
+            {
+                sendToUser(client, makeUserMsg(client, RPL_NONE, "Unrecognized command"));
+                std::cout << "Unrecognized command: " << ircCommand << std::endl;
+            }
         }
-        else 
-        {
-            sendToUser(client, makeUserMsg(client, RPL_NONE, "Unrecognized command"));
-            std::cout << "Unrecognized command: " << ircCommand << std::endl;
-        }
-    }
-    return (0);
+        return (0);
 }

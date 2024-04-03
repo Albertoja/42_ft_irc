@@ -20,6 +20,9 @@ public:
     void setHost(std::string host);
     void setService(std::string service);
     void setClientAddr(sockaddr_in clientAddr);
+    void setisLogin(bool login);
+    void setfirstLogin(bool login);
+    void setPass(std::string pass);
 
     //GETTERS
     int getSocket();
@@ -29,10 +32,15 @@ public:
     std::string getRealName();
     std::string getHostname();
     sockaddr_in getClientAddr();
+    bool        getisLogin();
+    bool        getfirstLogin();
+    std::string	getPass();
 
 private:
-    bool        _super;
     int         _socket;
+    bool        _isLogin;
+    bool        _firstLogin;
+    std::string _pass;
     std::string _NickName;
     std::string _LoginName;
     std::string _RealName;
@@ -40,6 +48,7 @@ private:
     std::string	_service;
     std::string	_lastMsg;
     sockaddr_in _clientAddr;
+    
 };
 
 #endif

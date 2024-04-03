@@ -21,6 +21,16 @@ ClientData	*Server::find_ClientData_Socket(int fd)
 	return (NULL);
 }
 
+ClientData	*Server::find_ClientData_Socket_login(int fd)
+{
+    for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
+    {
+		if ((*it)->getSocket() == fd)
+			return (*it);
+	}
+	return (NULL);
+}
+
 char *getIP()
 {
     char hostname[256];

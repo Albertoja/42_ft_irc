@@ -23,7 +23,7 @@ Server &Server::operator=(const Server &other)
     return(*this);
 }
 
-int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket, char *buffer)
+int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket)
 {
     std::string token;
     std::vector<std::string> tokens;
@@ -38,35 +38,50 @@ int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket
     _sockets.back().fd = client_socket;
     _sockets.back().events = POLLIN;
     ClientData* client = new ClientData(client_socket);
-    for(int i = 0; i < 3; i++)
-    {
-        int bytes_received = recv(client_socket, buffer, BUFFER_SIZE, 0);
-        std::string str;
-	    str.assign(buffer, 0, bytes_received);
-        std::vector<std::string> args = splitString(str, " \r\n");
-        if (bytes_received <= 0) 
-        {
-            std::cerr << "Error receiving client name" << std::endl;
-            _sockets.erase(_sockets.begin() + i);
-            close(client_socket);
-            args.clear();
-            continue;
-        }
-        if(firstCommand(args, client) != 0)
-        {
-            _sockets.erase(_sockets.end() - 1);
-            close(client_socket);
-            std::cerr << RED << "The user could not connect" << NOCOLOR << std::endl;
-            args.clear();
-            return 1;
-        }
-        args.clear();
-    }
-    //client->setHost(inet_ntoa(client->_clientAddr.sin_addr));
-    std::cout << GREEN << "New user connected :)" << NOCOLOR << std::endl;
-    clients_vec.push_back(client);
-    sendWelcomeMessageToUser(client);
+    clients_vec_login.push_back(client);
+    std::cout << RED << "New user try to connect" << NOCOLOR << std::endl;
     return 0;
+}
+
+void Server::checkFirst(ClientData *client)
+{
+    if(client->getPass() != "" && client->getNickName() != "" && client->getLoginName() == "")
+        client->setisLogin(true);
+}
+
+int Server::ReceiveDataClient_login(size_t socket_num, std::vector<std::string> args)
+{
+    ClientData *it_client = find_ClientData_Socket_login(_sockets[socket_num].fd);
+
+    if(firstCommand(args, it_client) == 0)
+    {
+        std::cout << "entra3" << std::endl;
+        checkFirst(it_client);
+        if(it_client->getisLogin() == true && it_client->getfirstLogin() == true)
+        {
+            std::cout << "entra10" << std::endl;
+            it_client->setfirstLogin(false);
+            std::cout << GREEN << "New user connected" << NOCOLOR << std::endl;
+            clients_vec.push_back(it_client);
+            for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
+            {
+                if ((*it) == it_client)
+                {
+                    clients_vec_login.erase(it);
+                    break;
+                }
+            }
+            sendWelcomeMessageToUser(it_client);
+        }
+        return 0;
+    }
+    else
+    {
+        std::cout << "entra9" << std::endl;
+        sendToUser(it_client, makeUserMsg(it_client, ERR_NEEDMOREPARAMS, "You have tried to access incorrectly"));
+        deleteClient(socket_num, it_client);
+        return 1;
+    }
 }
 
 int Server::ReceiveDataClient(size_t socket_num, char *buffer)
@@ -77,23 +92,32 @@ int Server::ReceiveDataClient(size_t socket_num, char *buffer)
     str.assign(buffer, 0, bytes);
     std::vector<std::string> args = splitString(str, " \r\n");
     ClientData *it_client = find_ClientData_Socket(_sockets[socket_num].fd);
-    if(it_client == NULL)
+    std::cout << "dice : " << str << std::endl;
+    if(bytes <= 0)
     {
-        std::cerr << "ERROR not in socket list" << std::endl;
-        return(1);
-    }
-    else if(bytes <= 0)
-    {
+        std::cout << "entra5" << std::endl;
         deleteClient(socket_num, it_client);
         return(1);
+    }
+    else if(it_client == NULL)
+    {
+        if(ReceiveDataClient_login(socket_num, args) != 0)
+        {
+            std::cout << "entra7" << std::endl;
+            std::cerr << "ERROR not in socket list" << std::endl;
+            return(1);
+        }
     }
     else
     {
         std::cout << it_client->getNickName() << " : " << str << std::endl;
+        std::cout << "entra4" << std::endl;
         if(processCommand(args, it_client, socket_num) != 0)
+        {
             return(2);
-        return(0);
+        }
     }
+    return(0);
 }
 
 void Server::CloseServer()
@@ -151,17 +175,20 @@ int Server::Start()
             {
                 if(_sockets[socket_num].fd == server_socket)
                 {
-                    if(CreateNewUser(client_addr, server_socket, buffer) != 0)
+                    std::cout << "entra" << std::endl;
+                    if(CreateNewUser(client_addr, server_socket) != 0)
                         break;
                 }
                 else
                 {
+                    std::cout << "entra2" << std::endl;
                     int i = ReceiveDataClient(socket_num, buffer);
                     if(i == 1)
                         break;
                     else if(i == 2)
                         return(0);
                 }
+
             }
         if(RunServer == false)
 			break;
