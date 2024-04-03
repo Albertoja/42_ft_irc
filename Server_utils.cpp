@@ -111,6 +111,7 @@ void	sendToUser(ClientData *targetUser, std::string message)
 		throw std::invalid_argument(" > Error at sendToUser() ");
 }
 
+
 void	Server::deleteClient(size_t socket_num, ClientData *it_client)
 {
     std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
@@ -127,11 +128,21 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
     {
         if (*it == it_client)
         {
+            it_client->~ClientData();
             clients_vec.erase(it);
             break;
         }
     }
-    it_client->~ClientData();
+    for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
+    {
+        if (*it == it_client)
+        {
+            std::cerr << RED << "entra" << NOCOLOR << std::endl;
+            it_client->~ClientData();
+            clients_vec_login.erase(it);
+            return;
+        }
+    }
 }
 
 std::string	Server::makePrivMsg(ClientData *sender, ClientData *receiver , std::string input)

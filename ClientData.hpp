@@ -23,9 +23,12 @@ public:
     void setisLogin(bool login);
     void setfirstLogin(bool login);
     void setPass(std::string pass);
+    void setSocketNum(int socket);
+    void setConnectionTime(time_t time);
 
     //GETTERS
     int getSocket();
+    int getSocketNum();
     int getFd();
     std::string getNickName();
     std::string getLoginName();
@@ -35,9 +38,13 @@ public:
     bool        getisLogin();
     bool        getfirstLogin();
     std::string	getPass();
+    bool		getAll();
+    time_t getConnectionTime();
+
 
 private:
     int         _socket;
+    int _clientsocketnum;
     bool        _isLogin;
     bool        _firstLogin;
     std::string _pass;
@@ -47,8 +54,11 @@ private:
     std::string	_host;
     std::string	_service;
     std::string	_lastMsg;
-    sockaddr_in _clientAddr;
-    
+    sockaddr_in _clientAddr;    
+    bool        _checkPass;
+    bool        _checkNick;
+    bool        _checkUser;
+    time_t      _connectionTime;
 };
 
 #endif

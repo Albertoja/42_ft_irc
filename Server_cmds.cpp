@@ -22,6 +22,7 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
             {
                 client->setPass(myPass);
                 std::cerr << "password correct!" << std::endl;
+                return 0;
             }
         }
         else if(ircCommand == "NICK" && client->getNickName() == "")
@@ -37,6 +38,7 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
             }
             std::cerr << "nick corect!" << std::endl;
             client->setNickName(newNickName);
+            return 0;
         }
         else if(ircCommand == "USER" && client->getLoginName() == "")
         {
@@ -45,14 +47,16 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
             client->setLoginName(newLogin);
             client->setRealName(newReal);
             std::cerr << "login correct!" << std::endl;
+            return 0;
         }
         else 
         {
             std::cout << "Error in initial commands -> " << ircCommand <<  " ?" << std::endl;
             return 1;
         }
+        return 1;
     }
-    return 0;
+    return 1;
 }
 
 int Server::processCommandOper(std::vector<std::string> args, ClientData *client)
