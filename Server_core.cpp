@@ -56,7 +56,6 @@ int Server::ReceiveDataClient_login(size_t socket_num, std::vector<std::string> 
             {
                 if ((*it) == it_client)
                 {
-                    
                     clients_vec_login.erase(it);
                     break;
                 }
@@ -67,7 +66,6 @@ int Server::ReceiveDataClient_login(size_t socket_num, std::vector<std::string> 
     }
     else
     {
-        std::cerr << "socket_num = " << socket_num << std::endl;
         sendToUser(it_client, makeUserMsg(it_client, ERR_NEEDMOREPARAMS, "You have tried to access incorrectly"));
         deleteClient(socket_num, it_client);
         return 1;
@@ -118,7 +116,11 @@ void Server::CloseServer()
     for(size_t client_num = 0; client_num < clients_vec.size(); client_num++)
         clients_vec[client_num]->~ClientData();
     clients_vec.clear();
+    for(size_t client_num = 0; client_num < clients_vec_login.size(); client_num++)
+        clients_vec_login[client_num]->~ClientData();
+    clients_vec_login.clear();
     std::cout << RED << "||Close server||" << NOCOLOR << std::endl;
+
 }
 
 void Server::createChanels()
@@ -152,12 +154,13 @@ int Server::Start()
     createChanels();
     while (RunServer)
     {
+        
         if(poll(&_sockets[0], _sockets.size(), 1000) == -1 && RunServer)
             std::cerr << RED << "Error poll" << NOCOLOR << std::endl;
         for(size_t socket_num = 0; socket_num < _sockets.size(); socket_num++)
         {
             char buffer[BUFFER_SIZE];
-            bzero (buffer, BUFFER_SIZE);
+            bzero(buffer, BUFFER_SIZE);
             if(_sockets[socket_num].revents & POLLIN)
             {
                 if(_sockets[socket_num].fd == server_socket)
@@ -176,7 +179,10 @@ int Server::Start()
 
             }
         if(RunServer == false)
-			break;
+        {
+            CloseServer();
+            exit(0);
+        }
         }
         if(!clients_vec_login.empty())
         {
@@ -186,6 +192,7 @@ int Server::Start()
                 if (currentTime - (*it)->getConnectionTime() > TIMEOUT)
                 {
                     std::cout << "Timeout. Closing connection." << std::endl;
+
                     deleteClient((*it)->getSocketNum(), (*it));
                     break;
                 }
@@ -193,7 +200,8 @@ int Server::Start()
         }
     }
     CloseServer();
-    return 0;
+    exit(0);
+    return(0);
 }
 
 

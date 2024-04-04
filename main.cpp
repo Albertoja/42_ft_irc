@@ -1,5 +1,6 @@
 #include "Irc.hpp"
 
+
 ClientData	*Server::findUser(std::string str)
 {
     for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
@@ -69,7 +70,6 @@ int main(int argc, char **argv)
     pass = checkpass(argv[2]);
 
     Server srv(port, pass);
-    
     srv.Start();
     return(0);
 }

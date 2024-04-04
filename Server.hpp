@@ -3,8 +3,6 @@
 
 #include "Irc.hpp"
 
-
-
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
 #define HOSTLEN 64

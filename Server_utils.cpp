@@ -1,6 +1,5 @@
 #include "Server.hpp"
 
-
 ClientData *Server::find_ClientData_Nickname(std::string str)
 {
     for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
@@ -31,27 +30,27 @@ ClientData	*Server::find_ClientData_Socket_login(int fd)
 	return (NULL);
 }
 
-char *getIP()
+std::string getIP()
 {
     char hostname[256];
-    char *ip = new char[100];
+    std::string ip;
 
     if (gethostname(hostname, sizeof(hostname)) == 0) 
     {
         struct hostent *hostinfo;
 
         if ((hostinfo = gethostbyname(hostname)) != NULL) 
-            strcpy(ip, inet_ntoa(*(struct in_addr *)hostinfo->h_addr));
+            ip = inet_ntoa(*(struct in_addr *)hostinfo->h_addr);
         else 
         {
             std::cerr << "Error getting host IP address" << std::endl;
-            return nullptr;
+            return "";
         }
     } 
     else 
     {
         std::cerr << "Error getting hostname" << std::endl;
-        return nullptr;
+        return "";
     }
 
     return ip;
@@ -78,7 +77,8 @@ int Server::create_serversocket()
         struct sockaddr_in addr;
         addr.sin_family = AF_INET;
         addr.sin_port = htons(valorHost);
-        addr.sin_addr.s_addr = inet_addr(getIP());
+        std::string ip = getIP();
+        addr.sin_addr.s_addr = inet_addr(ip.c_str());
         std::cout << BLUE << "Local IP: " << getIP() << NOCOLOR << std::endl;
         int bindResult = bind(server_socket, (struct sockaddr *)&addr, sizeof(addr));
         if (bindResult == -1)
@@ -126,21 +126,29 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
     {
         if (*it == it_client)
         {
+            delete(*it);
             clients_vec.erase(it);
             break;
         }
     }
-
     for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
     {
         if (*it == it_client)
         {
+            delete(*it);
             clients_vec_login.erase(it);
             break;
         }
     }
     close(_sockets[socket_num].fd);
-    _sockets.erase(_sockets.begin() + socket_num);
+    for (std::vector<pollfd>::iterator it = _sockets.begin(); it != _sockets.end(); ++it)
+    {
+        if (it_client->getSocket() == (*it).fd)
+        {
+            _sockets.erase(it);
+            break;
+        }
+    }
     it_client->~ClientData();
 }
 
@@ -255,7 +263,8 @@ void	Server::processChanMsg(std::vector<std::string> args, ClientData *sender)
     {
         std::cout << args[i] << std::endl;
         message += args[i];
-        if (i < args.size() - 1) {
+        if (i < args.size() - 1) 
+        {
             message += " ";
         }
     }
