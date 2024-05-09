@@ -199,11 +199,14 @@ int Server::Start()
                     int bytes;
                     bytes = recv(_sockets[socket_num].fd , buffer, BUFFER_SIZE, 0);
                     ClientData *it_client = find_ClientData_Socket(_sockets[socket_num].fd);
+                    std::cerr << RED << "BYTES" << bytes << NOCOLOR << std::endl;
                     if(bytes <= 0)
                     {
                         deleteClient(socket_num, it_client);
                         continue;
                     }
+                    else if(bytes == 1)
+                        break;
                     std::string str;
                     str.assign(buffer, 0, bytes);
                     int lines_n = contLines(str) - 1;
