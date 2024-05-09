@@ -202,7 +202,6 @@ int Server::Start()
                     if(bytes <= 0)
                     {
                         deleteClient(socket_num, it_client);
-                        std::cerr << RED << "entra" << NOCOLOR << std::endl;
                         continue;
                     }
                     std::string str;
