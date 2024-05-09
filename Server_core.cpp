@@ -198,7 +198,13 @@ int Server::Start()
                 {
                     int bytes;
                     bytes = recv(_sockets[socket_num].fd , buffer, BUFFER_SIZE, 0);
-                    
+                    ClientData *it_client = find_ClientData_Socket(_sockets[socket_num].fd);
+                    if(bytes <= 0)
+                    {
+                        deleteClient(socket_num, it_client);
+                        std::cerr << RED << "entra" << NOCOLOR << std::endl;
+                        continue;
+                    }
                     std::string str;
                     str.assign(buffer, 0, bytes);
                     int lines_n = contLines(str) - 1;
@@ -209,12 +215,7 @@ int Server::Start()
                     while(a <= lines_n)
                     {
                         i = ReceiveDataClient(socket_num, lines[a], bytes);
-                        if(i == 1)
-                        {
-                            lines.clear();
-                            break;
-                        }
-                        else if(i == 2)
+                        if(i == 2)
                         {
                             lines.clear();
                             return(0);

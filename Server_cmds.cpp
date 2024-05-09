@@ -67,7 +67,7 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
             {
                 std::cerr << "The client tried to log in with an incorrect password" << std::endl;
                 std::cerr << "|" << tryPass << "|" << std::endl;
-                return 1;
+                return 0;
             }
             else
             {
@@ -84,7 +84,7 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
                 if ((*it)->getNickName() == newNickName)
                 {
                     std::cerr << RED << "The user tried to connect with an already registered nickname" << NOCOLOR << std::endl;
-                    return(1);
+                    return 0;
                 }
             }
             std::cerr << "nick corect!" << std::endl;
@@ -107,11 +107,11 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
         else 
         {
             std::cout << "Error in initial commands -> " << ircCommand <<  " ?" << std::endl;
-            return 1;
+            return 0;
         }
-        return 1;
+        return 0;
     }
-    return 1;
+    return 0;
 }
 
 int Server::processCommandOper(std::vector<std::string> args, ClientData *client)

@@ -122,6 +122,7 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
             std::cerr << RED << "Client " << it_client->getNickName() << " left the channel " << (*it)->getChannelName() << NOCOLOR << std::endl;
         }
     }
+    std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
     for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
     {
         if (*it == it_client)
@@ -131,6 +132,7 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
             break;
         }
     }
+    std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
     for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
     {
         if (*it == it_client)
@@ -140,7 +142,9 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
             break;
         }
     }
+    std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
     close(_sockets[socket_num].fd);
+    std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
     for (std::vector<pollfd>::iterator it = _sockets.begin(); it != _sockets.end(); ++it)
     {
         if (it_client->getSocket() == (*it).fd)
@@ -149,6 +153,7 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
             break;
         }
     }
+    std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
     it_client->~ClientData();
 }
 
