@@ -25,6 +25,7 @@
 # include <iostream>
 # include <cstring>
 # include <csignal>
+# include <climits>
 
 class ClientData;
 class Server;

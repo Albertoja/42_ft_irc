@@ -127,9 +127,14 @@ std::string	makePrivMsg(ClientData *sender, ClientData *receiver , std::string i
 {
 	std::ostringstream 	message;
     if(input[0] != ':')
-	    message << ":" << sender->getNickName() << " PRIVMSG " <<  receiver->getNickName() << " :" << input << "\r\n";
+	{
+		message << ":" << sender->getNickName() << " PRIVMSG " <<  receiver->getNickName() << " :" << input << "\r\n";
+	}
+	    
     else
-        message << ":" << sender->getNickName() << " PRIVMSG " <<  receiver->getNickName() << " " << input << "\r\n";
+	{
+		message << ":" << sender->getNickName() << " PRIVMSG " <<  receiver->getNickName() << " " << input << "\r\n";
+	}
 	return (message.str());
 }
 

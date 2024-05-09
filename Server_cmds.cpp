@@ -1,10 +1,61 @@
 #include "Server.hpp"
 
 
+// int Server::firstCommand(std::string args, ClientData *client) 
+// {
+//     std::vector<std::string> comands = splitString(args, "\n");
 
+//     //std::vector<std::string> cap = splitString(comands[0], " \r\n");
+//     std::vector<std::string> pass = splitString(comands[0], " \r\n");
+//     std::vector<std::string> nick = splitString(comands[1], " \r\n");
+//     std::vector<std::string> user = splitString(comands[2], " \r\n");
+//     if (!comands.empty()) 
+//     {
+//         if(pass[0] == "PASS" && client->getPass() == "")
+//         { 
+//             std::string tryPass = pass[1];
+//             std::string myPass = _pass;
+//             if(myPass.compare(tryPass) != 0)
+//             {
+//                 std::cerr << "The client tried to log in with an incorrect password" << std::endl;
+//                 std::cerr << "|" << tryPass << "|" << std::endl;
+//                 return 1;
+//             }
+//             else
+//             {
+//                 client->setPass(myPass);
+//                 std::cerr << "passwordz correct!" << std::endl;
+//             }
+//         }
+//         if(nick[0] == "NICK" && client->getNickName() == "")
+//         {
+//             std::string newNickName = nick[1];
+//             for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
+//             {
+//                 if ((*it)->getNickName() == newNickName)
+//                 {
+//                     std::cerr << RED << "The user tried to connect with an already registered nickname" << NOCOLOR << std::endl;
+//                     return(1);
+//                 }
+//             }
+//             std::cerr << "nick corect!" << std::endl;
+//             client->setNickName(newNickName);
+//         }
+//         if(user[0] == "USER" && client->getLoginName() == "")
+//         {
+//             std::string newLogin = user[1];
+//             std::string newReal = user[4];
+//             client->setLoginName(newLogin);
+//             client->setRealName(newReal);
+//             std::cerr << "login correct!" << std::endl;
+//         }
+//     }
+//     return 0;
+// }
 int Server::firstCommand(std::vector<std::string> args, ClientData *client) 
 {
     std::vector<ClientData*>::iterator it;
+
     if (!args.empty()) 
     {
         std::string ircCommand = args[0];
@@ -47,6 +98,10 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
             client->setLoginName(newLogin);
             client->setRealName(newReal);
             std::cerr << "login correct!" << std::endl;
+            return 0;
+        }
+        else if(ircCommand == "CAP")
+        {
             return 0;
         }
         else 
@@ -147,6 +202,10 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
         }
         else if (ircCommand == "MODE")
         {
+            if (args[2] == "+i")
+            {
+                return 1;
+            }
             ChannelData *chan = findChannel(args[1]);
             if (args.size() < 3)
                 sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
@@ -258,7 +317,7 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
                     else
                     {
                         std::string joinCommand = "JOIN " + args[1] + "\r\n";
-                        send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
+                        // int bytesSent = send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
                         if(args.size() < 3)
                             chan->addUser(client, "", false);
                         else

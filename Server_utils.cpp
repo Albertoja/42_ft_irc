@@ -156,9 +156,13 @@ std::string	Server::makePrivMsg(ClientData *sender, ClientData *receiver , std::
 {
 	std::ostringstream 	message;
     if(input[0] != ':')
-	    message << ":" << sender->getNickName() << " PRIVMSG " <<  receiver->getNickName() << " :" << input << "\r\n";
+    {
+        message << ":" << sender->getNickName() << " PRIVMSG " <<  receiver->getNickName() << " :" << input << "\r\n";
+    }
     else
+    {
         message << ":" << sender->getNickName() << " PRIVMSG " <<  receiver->getNickName() << " " << input << "\r\n";
+    }
 	return (message.str());
 }
 
@@ -236,7 +240,7 @@ std::vector<std::string>	Server::splitString(std::string str, const char *dlmtrs
 	char	*ptr = strtok((char *)str.c_str(), dlmtrs);
 
 //	NOTE : strtok works iteratively, so it needs to be called once per token
-	while (ptr != nullptr && !std::string(ptr).empty())
+	while (ptr != NULL && !std::string(ptr).empty())
 	{
 		args.push_back(std::string(ptr));
 		ptr = strtok(NULL, dlmtrs);
@@ -248,8 +252,10 @@ std::vector<std::string>	Server::splitString(std::string str, const char *dlmtrs
 ChannelData	*Server::findChannel(std::string str)
 {
     for (std::vector<ChannelData*>::iterator it = this->channel_vec.begin(); it != this->channel_vec.end(); it++)
+    {
         if ((*it)->getChannelName() == str)
             return(*it);
+    }
 	return (NULL);
 }
 

@@ -6,11 +6,11 @@ OBJB	= ${SRCSB:.cpp=.o}
 
 NAME	=  IRC
 
-CXX	= clang++
+CXX	= c++
 
 RM	= rm -f
 
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 
+CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
 
 .c.o:
 		${CXX} ${CXXFLAGS} -c $< -o ${<:.cpp=.o}
