@@ -120,7 +120,7 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
         else if (ircCommand == "TOPIC")
         {
             ChannelData *chan = findChannel(args[1]);
-            if (args.size() < 2)
+            if (args[1] == "IRC")
                 sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
             else if(args.size() == 2)
             {
