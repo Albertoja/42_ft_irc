@@ -45,6 +45,8 @@ int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket
 int Server::ReceiveDataClient_login(size_t socket_num, std::vector<std::string> args)
 {
     ClientData *it_client = find_ClientData_Socket_login(_sockets[socket_num].fd);
+    if(it_client == NULL)
+        return 1;
     if(firstCommand(args, it_client) == 0)
     {
         if(it_client->getfirstLogin() == true && it_client->getAll() == true)
@@ -63,26 +65,16 @@ int Server::ReceiveDataClient_login(size_t socket_num, std::vector<std::string> 
             }
             sendWelcomeMessageToUser(it_client);
         }
-        return 0;
     }
-    else
-    {
-        sendToUser(it_client, makeUserMsg(it_client, ERR_NEEDMOREPARAMS, "You have tried to access incorrectly"));
-        deleteClient(socket_num, it_client);
-        return 1;
-    }
+    return 0;
 }
 
 int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
 {
-    //int bytes;
-    //bytes = recv(_sockets[socket_num].fd , buffer, BUFFER_SIZE, 0);
-    std::cout << line << std::endl;
     if (line.empty())
         return(0);
     std::vector<std::string> args = splitString(line, " \r\n");
     ClientData *it_client = find_ClientData_Socket(_sockets[socket_num].fd);
-    std::cout << line << std::endl;
     if(it_client == NULL)
     {
         if(ReceiveDataClient_login(socket_num, args) != 0)
@@ -94,7 +86,8 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
     }
     else if(bytes <= 0)
     {
-        deleteClient(socket_num, it_client);
+
+        deleteClient(socket_num, find_ClientData_Socket(socket_num));
         args.clear();
         return(1);
     }
@@ -199,9 +192,8 @@ int Server::Start()
                     int bytes;
                     bytes = recv(_sockets[socket_num].fd , buffer, BUFFER_SIZE, 0);
                     ClientData *it_client = find_ClientData_Socket(_sockets[socket_num].fd);
-                    std::cerr << RED << "BYTES" << bytes << NOCOLOR << std::endl;
                     if(bytes <= 0)
-                    {
+                    { 
                         deleteClient(socket_num, it_client);
                         continue;
                     }
@@ -212,8 +204,6 @@ int Server::Start()
                     int lines_n = contLines(str) - 1;
                     std::vector<std::string> lines = splitString(str, "\n");
                     int a = 0;
-                    std::cerr << RED << "lines_n = " << lines_n << NOCOLOR << std::endl;
-                    std::cerr << RED << "a = " << a << NOCOLOR << std::endl;
                     while(a <= lines_n)
                     {
                         i = ReceiveDataClient(socket_num, lines[a], bytes);
@@ -244,7 +234,7 @@ int Server::Start()
                 if (currentTime - (*it)->getConnectionTime() > TIMEOUT)
                 {
                     std::cout << "Timeout. Closing connection." << std::endl;
-
+                    std::cout << "echó a: " << (*it)->getNickName() << std::endl;
                     deleteClient((*it)->getSocketNum(), (*it));
                     break;
                 }

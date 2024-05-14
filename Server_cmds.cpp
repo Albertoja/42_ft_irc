@@ -111,7 +111,6 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
             {
                 sendToUser(client_to, makeUserMsg(client, "INVITE", args[1]));
                 std::string joinCommand = "JOIN " + args[1] + "\r\n";
-                send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
                 chan->addUser(client_to, chan->getPass(), true);
                 chan->sendToChannel(client_to, makeChanMsg(client_to, "JOIN", chan->getChannelName()), true);
             }
@@ -257,8 +256,7 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
         if (!args.empty()) 
         {
             std::string ircCommand = args[0];
-
-            if (ircCommand == "JOIN") 
+            if (ircCommand == "JOIN" && args.size() >= 2) 
             {
                 ChannelData *chan = findChannel(args[1]);
                 if (chan == NULL)
@@ -270,7 +268,6 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
                     else
                     {
                         std::string joinCommand = "JOIN " + args[1] + "\r\n";
-                        // int bytesSent = send(_sockets[0].fd, joinCommand.c_str(), joinCommand.length(), 0);
                         if(args.size() < 3)
                             chan->addUser(client, "", false);
                         else
@@ -280,7 +277,7 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
                     }
                 }
             } 
-            else if (ircCommand == "PRIVMSG") 
+            else if (ircCommand == "PRIVMSG" && args.size() >= 2) 
             {
                 if(args[1][0] == '#')
                     processChanMsg(args, client);
@@ -296,7 +293,7 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
                 CloseServer();
                 return (1);
             }
-            else if(ircCommand == "PART")
+            else if(ircCommand == "PART" && args.size() >= 2)
             {
                 ChannelData *chan = findChannel(args[1]);
                 if(chan == NULL)

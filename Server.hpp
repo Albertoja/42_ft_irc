@@ -6,7 +6,7 @@
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
 #define HOSTLEN 64
-#define TIMEOUT 42
+#define TIMEOUT 15
 
 class Server
 {
@@ -21,10 +21,8 @@ class Server
         int processCommandOper(std::vector<std::string> args, ClientData *client);
         int firstCommand(std::vector<std::string> args, ClientData *client);
         int suCommand(const std::string& command, std::vector<ClientData>::iterator it_client);
-        //int inChannelCmds(const std::string& command, ClientData &client, size_t socket_num, std::vector<ClientData>::iterator it_client);
         ClientData *find_ClientData_Socket(int fd);
         ClientData	*find_ClientData_Socket_login(int fd);
-        //void sendToUser(ClientData *targetUser, std::string message);
         int CreateNewUser(struct sockaddr_storage client_addr, int server_socket);
         int ReceiveDataClient(size_t socket_num, std::string line, int bytes);
         int ReceiveDataClient_login(size_t socket_num, std::vector<std::string> args);

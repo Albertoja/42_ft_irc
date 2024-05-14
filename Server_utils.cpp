@@ -114,42 +114,49 @@ void	sendToUser(ClientData *targetUser, std::string message)
 
 void	Server::deleteClient(size_t socket_num, ClientData *it_client)
 {
-    std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
-    for (std::vector<pollfd>::iterator it = _sockets.begin(); it != _sockets.end(); ++it)
+
+     std::cerr << RED << "Client disconnecteeeeeeeeeeeeeeeeeeeeeeeed" << NOCOLOR << std::endl;
+    if(it_client != NULL)
     {
-        if (it_client->getSocket() == (*it).fd)
+        std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
+        for (std::vector<pollfd>::iterator it = _sockets.begin(); it != _sockets.end(); ++it)
         {
-            _sockets.erase(it);
-            break;
+            if (it_client->getSocket() == (*it).fd)
+            {
+                _sockets.erase(it);
+                break;
+            }
         }
-    }
-    for (std::vector<ChannelData*>::iterator it = channel_vec.begin(); it != channel_vec.end(); ++it)
-    {
-        if((*it)->deleteUser(it_client))
+        for (std::vector<ChannelData*>::iterator it = channel_vec.begin(); it != channel_vec.end(); ++it)
         {
-            std::cerr << RED << "Client " << it_client->getNickName() << " left the channel " << (*it)->getChannelName() << NOCOLOR << std::endl;
+            if((*it)->deleteUser(it_client))
+            {
+                std::cerr << RED << "Client " << it_client->getNickName() << " left the channel " << (*it)->getChannelName() << NOCOLOR << std::endl;
+            }
         }
-    }
-    for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
-    {
-        if (*it == it_client)
+        for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
         {
-            delete(*it);
-            clients_vec.erase(it);
-            break;
+            if (*it == it_client)
+            {
+                delete(*it);
+                clients_vec.erase(it);
+                break;
+            }
         }
+        it_client->~ClientData();
     }
     for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
     {
-        if (*it == it_client)
+        if ((*it)->getSocketNum() == (int)socket_num)
         {
             delete(*it);
             clients_vec_login.erase(it);
             break;
         }
+        //close(_sockets[socket_num].fd);
     }
     close(_sockets[socket_num].fd);
-    it_client->~ClientData();
+    // it_client->~ClientData();
 }
 
 std::string	Server::makePrivMsg(ClientData *sender, ClientData *receiver , std::string input)
