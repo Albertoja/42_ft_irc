@@ -59,6 +59,7 @@ int Server::ReceiveDataClient_login(size_t socket_num, std::vector<std::string> 
             {
                 if ((*it) == it_client)
                 {
+                    std::cout << "Cliente ya borrado: " << (*it)->getNickName() << std::endl;
                     clients_vec_login.erase(it);
                     break;
                 }
@@ -86,7 +87,6 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
     }
     else if(bytes <= 0)
     {
-
         deleteClient(socket_num, find_ClientData_Socket(socket_num));
         args.clear();
         return(1);
@@ -195,10 +195,10 @@ int Server::Start()
                     if(bytes <= 0)
                     { 
                         deleteClient(socket_num, it_client);
-                        continue;
+                        break;
                     }
                     else if(bytes == 1)
-                        continue;
+                        break;
                     std::string str;
                     str.assign(buffer, 0, bytes);
                     int lines_n = contLines(str) - 1;
@@ -206,6 +206,7 @@ int Server::Start()
                     int a = 0;
                     while(a <= lines_n)
                     {
+                        std::cout << "A == " << a << std::endl;
                         i = ReceiveDataClient(socket_num, lines[a], bytes);
                         if(i == 2)
                         {

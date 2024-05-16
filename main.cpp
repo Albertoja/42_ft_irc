@@ -7,10 +7,10 @@ ClientData	*Server::findUser(std::string str)
     {
         if ((*it)->getNickName() == str)
         {
-            return (*it); // Devuelve un puntero a la instancia de ClientData en el vector
+            return (*it);
         }
     }
-    return NULL; // Devuelve nullptr si no se encuentra el usuario
+    return NULL;
 }
 
 std::string checkport(std::string port)

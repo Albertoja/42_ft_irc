@@ -107,6 +107,7 @@ std::string	makeUserMsg01(ClientData *user, std::string input)
 void	sendToUser(ClientData *targetUser, std::string message)
 {
 	std::ostringstream debug;
+    //std::cout << BLUE << "envia al usuario: " << getIP() << NOCOLOR << std::endl;
 	if (send(targetUser->getFd(), message.c_str(), message.size(), 0) < 0)
 		throw std::invalid_argument(" > Error at sendToUser() ");
 }
@@ -151,10 +152,8 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
             clients_vec_login.erase(it);
             break;
         }
-        //close(_sockets[socket_num].fd);
     }
     close(_sockets[socket_num].fd);
-    // it_client->~ClientData();
 }
 
 std::string	Server::makePrivMsg(ClientData *sender, ClientData *receiver , std::string input)
@@ -244,7 +243,6 @@ std::vector<std::string>	Server::splitString(std::string str, const char *dlmtrs
 
 	char	*ptr = strtok((char *)str.c_str(), dlmtrs);
 
-//	NOTE : strtok works iteratively, so it needs to be called once per token
 	while (ptr != NULL && !std::string(ptr).empty())
 	{
 		args.push_back(std::string(ptr));
