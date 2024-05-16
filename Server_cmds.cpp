@@ -57,6 +57,11 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
         {
             return 0;
         }
+        else if(ircCommand == "QUIT")
+        {
+            deleteClient(client->getSocketNum(), client);
+            return(1);
+        }
         else 
         {
             std::cout << "Error in initial commands -> " << ircCommand <<  " ?" << std::endl;
@@ -127,7 +132,8 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
                     sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
                 else if (!(chan->hasMember(client)))
                     sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User is not in channel"));
-                chan->printTopic(client);
+                else
+                    chan->printTopic(client);
             }
             else if (args.size() > 2)
             {

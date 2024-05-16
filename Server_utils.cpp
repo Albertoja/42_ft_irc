@@ -152,8 +152,8 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
             clients_vec_login.erase(it);
             break;
         }
-    }
     close(_sockets[socket_num].fd);
+    }
 }
 
 std::string	Server::makePrivMsg(ClientData *sender, ClientData *receiver , std::string input)

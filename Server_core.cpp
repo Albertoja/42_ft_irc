@@ -49,23 +49,23 @@ int Server::ReceiveDataClient_login(size_t socket_num, std::vector<std::string> 
         return 1;
     if(firstCommand(args, it_client) == 0)
     {
-        if(it_client->getfirstLogin() == true && it_client->getAll() == true)
-        {
-            
-            it_client->setfirstLogin(false);
-            std::cout << GREEN << "New user connected" << NOCOLOR << std::endl;
-            clients_vec.push_back(it_client);
-            for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
+            if(it_client->getfirstLogin() == true && it_client->getAll() == true)
             {
-                if ((*it) == it_client)
+                
+                it_client->setfirstLogin(false);
+                std::cout << GREEN << "New user connected" << NOCOLOR << std::endl;
+                clients_vec.push_back(it_client);
+                for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
                 {
-                    std::cout << "Cliente ya borrado: " << (*it)->getNickName() << std::endl;
-                    clients_vec_login.erase(it);
-                    break;
+                    if ((*it) == it_client)
+                    {
+                        std::cout << "Cliente ya borrado: " << (*it)->getNickName() << std::endl;
+                        clients_vec_login.erase(it);
+                        break;
+                    }
                 }
+                sendWelcomeMessageToUser(it_client);
             }
-            sendWelcomeMessageToUser(it_client);
-        }
     }
     return 0;
 }
