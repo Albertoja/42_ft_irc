@@ -198,7 +198,7 @@ int Server::Start()
                         continue;
                     }
                     else if(bytes == 1)
-                        break;
+                        continue;
                     std::string str;
                     str.assign(buffer, 0, bytes);
                     int lines_n = contLines(str) - 1;

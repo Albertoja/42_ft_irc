@@ -114,8 +114,6 @@ void	sendToUser(ClientData *targetUser, std::string message)
 
 void	Server::deleteClient(size_t socket_num, ClientData *it_client)
 {
-
-     std::cerr << RED << "Client disconnecteeeeeeeeeeeeeeeeeeeeeeeed" << NOCOLOR << std::endl;
     if(it_client != NULL)
     {
         std::cerr << RED << "Client disconnected" << NOCOLOR << std::endl;
