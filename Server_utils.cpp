@@ -107,7 +107,6 @@ std::string	makeUserMsg01(ClientData *user, std::string input)
 void	sendToUser(ClientData *targetUser, std::string message)
 {
 	std::ostringstream debug;
-    //std::cout << BLUE << "envia al usuario: " << getIP() << NOCOLOR << std::endl;
 	if (send(targetUser->getFd(), message.c_str(), message.size(), 0) < 0)
 		throw std::invalid_argument(" > Error at sendToUser() ");
 }
@@ -131,6 +130,8 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
             if((*it)->deleteUser(it_client))
             {
                 std::cerr << RED << "Client " << it_client->getNickName() << " left the channel " << (*it)->getChannelName() << NOCOLOR << std::endl;
+                delete(*it);
+                channel_vec.erase(it);
             }
         }
         for (std::vector<ClientData*>::iterator it = clients_vec.begin(); it != clients_vec.end(); ++it)
@@ -144,6 +145,7 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
         }
         it_client->~ClientData();
     }
+    delete(it_client);
     for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
     {
         if ((*it)->getSocketNum() == (int)socket_num)

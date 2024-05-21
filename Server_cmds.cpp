@@ -5,7 +5,7 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
 {
     std::vector<ClientData*>::iterator it;
 
-    if (!args.empty()) 
+    if (!args.empty() && client != NULL) 
     {
         std::string ircCommand = args[0];
         if(ircCommand == "PASS" && client->getPass() == "")
@@ -45,11 +45,14 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
         else if(ircCommand == "USER" && client->getLoginName() == "")
         {
             std::string newLogin = args[1];
-            std::string newReal = args[4];
             if(newLogin.empty())
                 return 0;
             client->setLoginName(newLogin);
-            client->setRealName(newReal);
+            if(args.size() == 5)
+            {
+                std::string newReal = args[4];
+                client->setRealName(newReal);
+            }
             std::cerr << "login correct!" << std::endl;
             return 0;
         }
@@ -75,7 +78,7 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
 int Server::processCommandOper(std::vector<std::string> args, ClientData *client)
 {
     
-    if (!args.empty()) 
+    if (!args.empty() && client != NULL) 
     {
         ClientData *client_to = find_ClientData_Nickname(args[2]);
         std::string ircCommand = args[0];
@@ -152,7 +155,6 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
                     }
                     if (newTopic.size() > 0 && newTopic[0] == ':')
                         newTopic = newTopic.substr(1);
-                    std::cout << "new = " << newTopic << std::endl;
                     chan->setTopic(args[1] + " " + newTopic);
                 }
             }

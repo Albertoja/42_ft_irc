@@ -11,7 +11,6 @@ public:
     ~ClientData();
     ClientData(const ClientData &other);
     ClientData	&operator=(const ClientData &other);
-    static int	CreateClientData(int fd, struct sockaddr *addr, socklen_t addrlen);
 
     //SETTERS
     void setNickName(std::string newNickName);

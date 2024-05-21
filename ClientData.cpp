@@ -44,26 +44,3 @@ ClientData &ClientData::operator=(const ClientData &other)
     return(*this);
 }
 
-int	ClientData::CreateClientData(int fd, struct sockaddr * addr, socklen_t addrlen)
-{
-	ClientData		*temp = new ClientData(fd);
-	char			host[NI_MAXHOST];
-	char			service[NI_MAXSERV];
-	std::string		hoststring;
-
-	if (getnameinfo(addr, addrlen, host, sizeof(host), service, sizeof(service), NI_NUMERICHOST) != 0)
-	{
-		std::cerr << RED << "Error. Couldn't retrieve hostname" << NOCOLOR << std::endl;
-		close(fd);
-		delete temp;
-		return (0) ;
-	}
-	hoststring = host;
-	if (hoststring.size() > HOSTLEN)
-			hoststring.erase(HOSTLEN, std::string::npos);
-	temp->setHost(hoststring);
-	temp->setService(std::string (service));
-	
-
-	return (0);
-}

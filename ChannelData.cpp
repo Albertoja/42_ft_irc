@@ -77,6 +77,7 @@ void    ChannelData::addUser(ClientData *client, std::string pass, bool invite)
 			sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "User allready in the channel"));
 			return;
 		}
+		
 	}
 	if(invite)
 	{
