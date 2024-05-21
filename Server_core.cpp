@@ -201,12 +201,13 @@ int Server::Start()
                         break;
                     std::string str;
                     str.assign(buffer, 0, bytes);
-                    int lines_n = contLines(str) - 1;
+                    int lines_n = contLines(str);
+                    if(lines_n > 0)
+                        lines_n -= 1;
                     std::vector<std::string> lines = splitString(str, "\n");
                     int a = 0;
                     while(a <= lines_n)
                     {
-                        std::cout << "A == " << a << std::endl;
                         i = ReceiveDataClient(socket_num, lines[a], bytes);
                         if(i == 2)
                         {
@@ -235,7 +236,6 @@ int Server::Start()
                 if (currentTime - (*it)->getConnectionTime() > TIMEOUT)
                 {
                     std::cout << "Timeout. Closing connection." << std::endl;
-                    std::cout << "echó a: " << (*it)->getNickName() << std::endl;
                     deleteClient((*it)->getSocketNum(), (*it));
                     break;
                 }
