@@ -38,7 +38,6 @@ class ChannelData
 		
 		void	sendToChannel(ClientData *client, std::string message, bool sendToSender);
 		bool	isChanOp(ClientData *client);
-		void    changeTopic(ClientData *client, std::string newtopic);
 		void    addUser(ClientData *client, std::string pass, bool invite);
         void    printTopic(ClientData *client);
 		bool	hasMember (ClientData *client);

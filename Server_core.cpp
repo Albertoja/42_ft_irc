@@ -59,7 +59,6 @@ int Server::ReceiveDataClient_login(size_t socket_num, std::vector<std::string> 
                 {
                     if ((*it) == it_client)
                     {
-                        std::cout << "Cliente ya borrado: " << (*it)->getNickName() << std::endl;
                         clients_vec_login.erase(it);
                         break;
                     }
@@ -126,17 +125,17 @@ void Server::CloseServer()
 void Server::createChanels()
 {
     
-    ChannelData *all = new ChannelData("#all", "A public channel where everyone is welcome to engage in discussions on various topics.", "passall");
+    ChannelData *all = new ChannelData("#all", "#all A public channel where everyone is welcome to engage in discussions on various topics.", "passall");
     channel_vec.push_back(all);
-    ChannelData *news = new ChannelData("#news", "Stay updated with current news and events.", "passnews");
+    ChannelData *news = new ChannelData("#news", "#news Stay updated with current news and events.", "passnews");
     channel_vec.push_back(news);
-    ChannelData *cars = new ChannelData("#cars", "Dive into discussions about automobiles and everything related to cars.", "passcars");
+    ChannelData *cars = new ChannelData("#cars", "#cars Dive into discussions about automobiles and everything related to cars.", "passcars");
     channel_vec.push_back(cars);
-    ChannelData *music = new ChannelData("#music", "Explore the latest music releases and share your favorite tunes.", "passmusic");
+    ChannelData *music = new ChannelData("#music", "#music Explore the latest music releases and share your favorite tunes.", "passmusic");
     channel_vec.push_back(music);
-    ChannelData *games = new ChannelData("#games", "Join the gaming community to discuss video games and the latest releases.", "passgames");
+    ChannelData *games = new ChannelData("#games", "#games Join the gaming community to discuss video games and the latest releases.", "passgames");
     channel_vec.push_back(games);
-    ChannelData *movies= new ChannelData("#movies", "Delve into conversations about classic films and cinematic masterpieces.", "passmovies");
+    ChannelData *movies= new ChannelData("#movies", "#movies Delve into conversations about classic films and cinematic masterpieces.", "passmovies");
     channel_vec.push_back(movies);
 
 }

@@ -147,13 +147,13 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
                     for (size_t i = 2; i < args.size(); ++i) 
                     {
                         newTopic += args[i];
-                        if (i < args.size() - 1) {
+                        if (i < args.size() - 1) 
                             newTopic += " ";
-                        }
                     }
                     if (newTopic.size() > 0 && newTopic[0] == ':')
                         newTopic = newTopic.substr(1);
-                    chan->setTopic(newTopic);
+                    std::cout << "new = " << newTopic << std::endl;
+                    chan->setTopic(args[1] + " " + newTopic);
                 }
             }
             return (1);

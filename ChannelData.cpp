@@ -114,15 +114,6 @@ void    ChannelData::printTopic(ClientData *client)
 
 }
 
-void    ChannelData::changeTopic(ClientData *client, std::string newtopic)
-{
-	newtopic.empty();
-	if(this->hasTopicRestrictions())
-		sendToUser(client, makeUserMsg(client, ERR_NOPRIVILEGES, "Error: This server does not allow to change the topic"));
-}
-
-
-
 std::string	makePrivMsg(ClientData *sender, ClientData *receiver , std::string input)
 {
 	std::ostringstream 	message;
