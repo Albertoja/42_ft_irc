@@ -42,12 +42,12 @@ int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket
     std::cout << RED << "New user try to connect" << NOCOLOR << std::endl;
     return 0;
 }
-int Server::ReceiveDataClient_login(size_t socket_num, std::vector<std::string> args)
+int Server::ReceiveDataClient_login(size_t socket_num)
 {
     ClientData *it_client = find_ClientData_Socket_login(_sockets[socket_num].fd);
     if(it_client == NULL)
         return 1;
-    if(firstCommand(args, it_client) == 0)
+    if(firstCommand(it_client) == 0)
     {
             if(it_client->getfirstLogin() == true && it_client->getAll() == true)
             {
@@ -73,11 +73,11 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
 {
     if (line.empty())
         return(0);
-    std::vector<std::string> args = splitString(line, " \r\n");
+    args = splitString(line, " \r\n");
     ClientData *it_client = find_ClientData_Socket(_sockets[socket_num].fd);
     if(it_client == NULL)
     {
-        if(ReceiveDataClient_login(socket_num, args) != 0)
+        if(ReceiveDataClient_login(socket_num) != 0)
         {
             std::cerr << "ERROR not in socket list" << std::endl;
             args.clear();
@@ -93,9 +93,8 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
     else
     {
         std::cout << it_client->getNickName() << " : " << line << std::endl;
-        if(processCommand(args, it_client, socket_num) != 0)
+        if(processCommand(it_client, socket_num) != 0)
         {
-            
             args.clear();
             return(2);
         }
@@ -104,23 +103,6 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
     return(0);
 }
 
-void Server::CloseServer()
-{
-    for(size_t channel_num = 0; channel_num < channel_vec.size(); channel_num++)
-        channel_vec[channel_num]->~ChannelData();
-    channel_vec.clear();
-    for(size_t socket_num = 0; socket_num < _sockets.size(); socket_num++)
-        close(_sockets[socket_num].fd);
-    _sockets.clear();
-    for(size_t client_num = 0; client_num < clients_vec.size(); client_num++)
-        clients_vec[client_num]->~ClientData();
-    clients_vec.clear();
-    for(size_t client_num = 0; client_num < clients_vec_login.size(); client_num++)
-        clients_vec_login[client_num]->~ClientData();
-    clients_vec_login.clear();
-    std::cout << RED << "||Close server||" << NOCOLOR << std::endl;
-
-}
 
 void Server::createChanels()
 {
@@ -168,7 +150,6 @@ int Server::Start()
     createChanels();
     while (RunServer)
     {
-        
         if(poll(&_sockets[0], _sockets.size(), 0) == -1 && RunServer)
         {
             std::cerr << RED << "Error poll" << NOCOLOR << std::endl;
@@ -203,7 +184,7 @@ int Server::Start()
                     int lines_n = contLines(str);
                     if(lines_n > 0)
                         lines_n -= 1;
-                    std::vector<std::string> lines = splitString(str, "\n");
+                    lines = splitString(str, "\n");
                     int a = 0;
                     while(a <= lines_n)
                     {

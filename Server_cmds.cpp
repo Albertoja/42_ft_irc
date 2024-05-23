@@ -1,7 +1,7 @@
 #include "Server.hpp"
 
 
-int Server::firstCommand(std::vector<std::string> args, ClientData *client) 
+int Server::firstCommand(ClientData *client) 
 {
     std::vector<ClientData*>::iterator it;
 
@@ -75,16 +75,24 @@ int Server::firstCommand(std::vector<std::string> args, ClientData *client)
     return 0;
 }
 
-int Server::processCommandOper(std::vector<std::string> args, ClientData *client)
+int Server::processCommandOper(ClientData *client)
 {
-    
+
     if (!args.empty() && client != NULL) 
     {
-        ClientData *client_to = find_ClientData_Nickname(args[2]);
+        ClientData *client_to;
+        if(args.size() >= 3)
+            client_to = find_ClientData_Nickname(args[2]);
+        else
+            client_to = NULL;
+        ChannelData *chan;
+        if(args.size() >= 2)
+            chan = findChannel(args[1]);
+        else
+            chan = NULL;
         std::string ircCommand = args[0];
         if (ircCommand == "KICK")
         {
-            ChannelData *chan = findChannel(args[1]);
             if (args.size() < 3)
 		        sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
             else if (chan == NULL)
@@ -104,7 +112,6 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
         }
         else if(ircCommand == "INVITE")
         {
-            ChannelData *chan = findChannel(args[1]);
             if (args.size() < 3)
 		        sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
             else if (chan == NULL)
@@ -126,7 +133,6 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
         }
         else if (ircCommand == "TOPIC")
         {
-            ChannelData *chan = findChannel(args[1]);
             if (args[1] == "IRC")
                 sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
             else if(args.size() == 2)
@@ -166,7 +172,6 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
             {
                 return 1;
             }
-            ChannelData *chan = findChannel(args[1]);
             if (args.size() < 3)
                 sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
             else if (chan == NULL)
@@ -213,8 +218,11 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
                 }
             }
             else if(args[2] == "o")
-            {            
-                ClientData *client_to = find_ClientData_Nickname(args[3]);
+            {           
+                if(args.size() >= 4) 
+                    client_to = find_ClientData_Nickname(args[3]);
+                else
+                    client_to = NULL;
                 if (args.size() < 4)
                     sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
                 else if (client_to == NULL)
@@ -257,9 +265,9 @@ int Server::processCommandOper(std::vector<std::string> args, ClientData *client
     return (0);
 }
 
-int Server::processCommand(std::vector<std::string> args, ClientData *client, size_t socket_num) 
+int Server::processCommand(ClientData *client, size_t socket_num) 
 {
-        if(processCommandOper(args, client) == 1)
+        if(processCommandOper(client) == 1)
             return (0);
         if (!args.empty()) 
         {
@@ -288,9 +296,9 @@ int Server::processCommand(std::vector<std::string> args, ClientData *client, si
             else if (ircCommand == "PRIVMSG" && args.size() >= 2) 
             {
                 if(args[1][0] == '#')
-                    processChanMsg(args, client);
+                    processChanMsg(client);
                 else
-                    send_PersonalMessage(args, client);
+                    send_PersonalMessage(client);
             }
             else if(ircCommand == "QUIT")
             {
