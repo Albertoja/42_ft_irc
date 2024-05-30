@@ -76,10 +76,12 @@ int Server::create_serversocket()
             CloseServer();
         }
         struct sockaddr_in addr;
+        std::memset(&addr, 0, sizeof(addr));
         addr.sin_family = AF_INET;
         addr.sin_port = htons(valorHost);
         std::string ip = getIP();
-        addr.sin_addr.s_addr = inet_addr(ip.c_str());
+        addr.sin_addr.s_addr = INADDR_ANY;
+
         std::cout << BLUE << "Local IP: " << getIP() << NOCOLOR << std::endl;
         int bindResult = bind(server_socket, (struct sockaddr *)&addr, sizeof(addr));
         if (bindResult == -1)
@@ -248,16 +250,19 @@ void Server::sendWelcomeMessageToUser(ClientData* client)
 
 std::vector<std::string>	Server::splitString(std::string str, const char *dlmtrs)
 {
-	char	*ptr = strtok((char *)str.c_str(), dlmtrs);
-    std::vector<std::string>().swap(args);
+    char *buffer = new char[str.size() + 1];
+    std::strcpy(buffer, str.c_str());
+    char *ptr = std::strtok(buffer, dlmtrs);
     args.clear();
-	while (ptr != NULL && !std::string(ptr).empty())
-	{
-		args.push_back(std::string(ptr));
-		ptr = strtok(NULL, dlmtrs);
-	}
 
-	return args;
+    while (ptr != NULL) {
+        if (!std::string(ptr).empty()) {
+            args.push_back(std::string(ptr));
+        }
+        ptr = std::strtok(NULL, dlmtrs);
+    }
+    delete[] buffer;
+    return args;
 }
 
 ChannelData	*Server::findChannel(std::string str)

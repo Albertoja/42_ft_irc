@@ -166,6 +166,10 @@ int Server::processCommandOper(ClientData *client)
             }
             return (1);
         }
+        else if (ircCommand == "WHO")
+        {
+            return 1;
+        }
         else if (ircCommand == "MODE")
         {
             if (args[2] == "+i")
@@ -173,7 +177,7 @@ int Server::processCommandOper(ClientData *client)
                 return 1;
             }
             if (args.size() < 3)
-                sendToUser(client, makeUserMsg(client, ERR_NEEDMOREPARAMS, "Need more parameters"));
+                return 1;
             else if (chan == NULL)
                 sendToUser(client, makeUserMsg(client, ERR_NOSUCHCHANNEL, "Channel does not exist"));
             else if (!chan->isChanOp(client))
