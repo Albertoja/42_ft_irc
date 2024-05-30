@@ -92,7 +92,6 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
     }
     else
     {
-        std::cout << it_client->getNickName() << " : " << line << std::endl;
         if(processCommand(it_client, socket_num) != 0)
         {
             args.clear();

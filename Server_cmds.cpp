@@ -14,14 +14,13 @@ int Server::firstCommand(ClientData *client)
             std::string myPass = _pass;
             if(myPass.compare(tryPass) != 0)
             {
-                std::cerr << "The client tried to log in with an incorrect password" << std::endl;
-                std::cerr << "|" << tryPass << "|" << std::endl;
+                sendToUser(client, makeUserMsg(client, RPL_NONE, "incorrect password"));
                 return 0;
             }
             else
             {
                 client->setPass(myPass);
-                std::cerr << "password correct!" << std::endl;
+                sendToUser(client, makeUserMsg(client, RPL_NONE, "password correct!"));
                 return 0;
             }
         }
@@ -34,11 +33,11 @@ int Server::firstCommand(ClientData *client)
             {
                 if ((*it)->getNickName() == newNickName)
                 {
-                    std::cerr << RED << "The user tried to connect with an already registered nickname" << NOCOLOR << std::endl;
+                    sendToUser(client, makeUserMsg(client, RPL_NONE, "error: already registered nickname"));
                     return 0;
                 }
             }
-            std::cerr << "nick corect!" << std::endl;
+            sendToUser(client, makeUserMsg(client, RPL_NONE, "nickname entered correctly"));
             client->setNickName(newNickName);
             return 0;
         }
@@ -53,7 +52,7 @@ int Server::firstCommand(ClientData *client)
                 std::string newReal = args[4];
                 client->setRealName(newReal);
             }
-            std::cerr << "login correct!" << std::endl;
+            sendToUser(client, makeUserMsg(client, RPL_NONE, "login entered correctly"));
             return 0;
         }
         else if(ircCommand == "CAP")

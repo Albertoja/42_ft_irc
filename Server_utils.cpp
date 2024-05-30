@@ -125,6 +125,7 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
         {
             if (it_client->getSocket() == (*it).fd)
             {
+                close((*it).fd);
                 _sockets.erase(it);
                 break;
             }
@@ -163,8 +164,6 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
                 break;
             }
         }
-        // Cerrar el socket
-        close(_sockets[socket_num].fd);
     }
 }
 
@@ -204,7 +203,6 @@ void Server::send_PersonalMessage(ClientData *sender)
         } 
     }
     sendToUser(sender, makeUserMsg(sender, ERR_ERRONEUSNICKNAME, "The client you want to send the message to does not exist"));
-    std::cerr << RED << "A client tried to contact a non-existent client" << NOCOLOR << std::endl;
     return ;
 }
 
@@ -250,19 +248,16 @@ void Server::sendWelcomeMessageToUser(ClientData* client)
 
 std::vector<std::string>	Server::splitString(std::string str, const char *dlmtrs)
 {
-    char *buffer = new char[str.size() + 1];
-    std::strcpy(buffer, str.c_str());
-    char *ptr = std::strtok(buffer, dlmtrs);
+	char	*ptr = strtok((char *)str.c_str(), dlmtrs);
+    std::vector<std::string>().swap(args);
     args.clear();
+	while (ptr != NULL && !std::string(ptr).empty())
+	{
+		args.push_back(std::string(ptr));
+		ptr = strtok(NULL, dlmtrs);
+	}
 
-    while (ptr != NULL) {
-        if (!std::string(ptr).empty()) {
-            args.push_back(std::string(ptr));
-        }
-        ptr = std::strtok(NULL, dlmtrs);
-    }
-    delete[] buffer;
-    return args;
+	return args;
 }
 
 ChannelData	*Server::findChannel(std::string str)
