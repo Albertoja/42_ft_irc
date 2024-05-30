@@ -7,6 +7,11 @@ int Server::firstCommand(ClientData *client)
 
     if (!args.empty() && client != NULL) 
     {
+        if(args.size() == 1)
+        {
+            sendToUser(client, makeUserMsg(client, RPL_NONE, "Need more parameters"));
+            return 0;
+        }
         std::string ircCommand = args[0];
         if(ircCommand == "PASS" && client->getPass() == "")
         { 
@@ -171,10 +176,6 @@ int Server::processCommandOper(ClientData *client)
         }
         else if (ircCommand == "MODE")
         {
-            if (args[2] == "+i")
-            {
-                return 1;
-            }
             if (args.size() < 3)
                 return 1;
             else if (chan == NULL)
