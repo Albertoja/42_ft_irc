@@ -5,6 +5,8 @@ int Server::firstCommand(ClientData *client)
 {
     std::vector<ClientData*>::iterator it;
 
+    args = splitString(client->getOldMsg(), " \r\n");
+    client->setOldMsg("");
     if (!args.empty() && client != NULL) 
     {
         if(args.size() == 1)
@@ -271,6 +273,8 @@ int Server::processCommandOper(ClientData *client)
 
 int Server::processCommand(ClientData *client, size_t socket_num) 
 {
+        args = splitString(client->getOldMsg(), " \r\n");
+        client->setOldMsg("");
         if(processCommandOper(client) == 1)
             return (0);
         if (!args.empty()) 

@@ -18,6 +18,7 @@ ClientData	*Server::find_ClientData_Socket(int fd)
 		if ((*it)->getSocket() == fd)
 			return (*it);
 	}
+
 	return (NULL);
 }
 
@@ -30,6 +31,7 @@ ClientData	*Server::find_ClientData_Socket_login(int fd)
 	}
 	return (NULL);
 }
+
 
 std::string getIP()
 {

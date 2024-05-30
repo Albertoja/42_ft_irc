@@ -25,7 +25,7 @@ class Server
         ClientData	*find_ClientData_Socket_login(int fd);
         int CreateNewUser(struct sockaddr_storage client_addr, int server_socket);
         int ReceiveDataClient(size_t socket_num, std::string line, int bytes);
-        int ReceiveDataClient_login(size_t socket_num);
+        int ReceiveDataClient_login(size_t socket_num, std::string line);
         void deleteClient(size_t socket_num, ClientData *it_client);
         void CloseServer();
         static void CloseServer01();;

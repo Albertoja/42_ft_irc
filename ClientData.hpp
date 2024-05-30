@@ -24,6 +24,7 @@ public:
     void setPass(std::string pass);
     void setSocketNum(int socket);
     void setConnectionTime(time_t time);
+    void setOldMsg(std::string oldMsg);
 
     //GETTERS
     int getSocket();
@@ -39,7 +40,7 @@ public:
     std::string	getPass();
     bool		getAll();
     time_t getConnectionTime();
-
+    std::string getOldMsg();
 
 private:
     int         _socket;
@@ -58,6 +59,8 @@ private:
     bool        _checkNick;
     bool        _checkUser;
     time_t      _connectionTime;
+    std::string _oldMsg;
+    std::vector<std::string> args_client;
 };
 
 #endif

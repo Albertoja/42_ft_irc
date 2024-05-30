@@ -42,29 +42,33 @@ int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket
     std::cout << RED << "New user try to connect" << NOCOLOR << std::endl;
     return 0;
 }
-int Server::ReceiveDataClient_login(size_t socket_num)
+int Server::ReceiveDataClient_login(size_t socket_num, std::string line)
 {
     ClientData *it_client = find_ClientData_Socket_login(_sockets[socket_num].fd);
     if(it_client == NULL)
         return 1;
-    if(firstCommand(it_client) == 0)
+    it_client->setOldMsg(it_client->getOldMsg() + line);
+    if (!it_client->getOldMsg().empty() && it_client->getOldMsg()[it_client->getOldMsg().size() - 1] == '\n') 
     {
-            if(it_client->getfirstLogin() == true && it_client->getAll() == true)
-            {
-                
-                it_client->setfirstLogin(false);
-                std::cout << GREEN << "New user connected" << NOCOLOR << std::endl;
-                clients_vec.push_back(it_client);
-                for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
+        if(firstCommand(it_client) == 0)
+        {
+                if(it_client->getfirstLogin() == true && it_client->getAll() == true)
                 {
-                    if ((*it) == it_client)
+                    
+                    it_client->setfirstLogin(false);
+                    std::cout << GREEN << "New user connected" << NOCOLOR << std::endl;
+                    clients_vec.push_back(it_client);
+                    for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
                     {
-                        clients_vec_login.erase(it);
-                        break;
+                        if ((*it) == it_client)
+                        {
+                            clients_vec_login.erase(it);
+                            break;
+                        }
                     }
+                    sendWelcomeMessageToUser(it_client);
                 }
-                sendWelcomeMessageToUser(it_client);
-            }
+        }
     }
     return 0;
 }
@@ -77,7 +81,7 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
     ClientData *it_client = find_ClientData_Socket(_sockets[socket_num].fd);
     if(it_client == NULL)
     {
-        if(ReceiveDataClient_login(socket_num) != 0)
+        if(ReceiveDataClient_login(socket_num, line) != 0)
         {
             std::cerr << "ERROR not in socket list" << std::endl;
             args.clear();
@@ -92,10 +96,14 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
     }
     else
     {
-        if(processCommand(it_client, socket_num) != 0)
+        it_client->setOldMsg(it_client->getOldMsg() + line);
+        if (!it_client->getOldMsg().empty() && it_client->getOldMsg()[it_client->getOldMsg().size() - 1] == '\n') 
         {
-            args.clear();
-            return(2);
+            if(processCommand(it_client, socket_num) != 0)
+            {
+                args.clear();
+                return(2);
+            }
         }
     }
     args.clear();
@@ -177,23 +185,20 @@ int Server::Start()
                         break;
                     }
                     else if(bytes == 1)
+                    {
                         break;
+                    }
                     std::string str;
                     str.assign(buffer, 0, bytes);
                     int lines_n = contLines(str);
                     if(lines_n > 0)
                         lines_n -= 1;
                     lines = splitString(str, "\n");
-                    int a = 0;
-                    while(a <= lines_n)
+                    i = ReceiveDataClient(socket_num, str, bytes);
+                    if(i == 2)
                     {
-                        i = ReceiveDataClient(socket_num, lines[a], bytes);
-                        if(i == 2)
-                        {
-                            lines.clear();
-                            return(0);
-                        }
-                        a++;
+                        lines.clear();
+                        return(0);
                     }
                     lines.clear();
                     if(i == 1)
