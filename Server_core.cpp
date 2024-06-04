@@ -47,7 +47,6 @@ int Server::ReceiveDataClient_login(size_t socket_num, std::string line)
     ClientData *it_client = find_ClientData_Socket_login(_sockets[socket_num].fd);
     if(it_client == NULL)
         return 1;
-    if(line.empty())
     it_client->setOldMsg(it_client->getOldMsg() + line);
     if (!it_client->getOldMsg().empty() && it_client->getOldMsg()[it_client->getOldMsg().size() - 1] == '\n') 
     {
@@ -182,11 +181,11 @@ int Server::Start()
                 {
                     int bytes;
                     bytes = recv(_sockets[socket_num].fd , buffer, BUFFER_SIZE, 0);
+                    std::cout << bytes << std::endl;
                     ClientData *it_client;
                     it_client = find_ClientData_Socket(_sockets[socket_num].fd);
                     if(!it_client)
                         it_client = find_ClientData_Socket_login(_sockets[socket_num].fd);
-
                     if(bytes <= 0)
                     { 
                         deleteClient(socket_num, it_client);

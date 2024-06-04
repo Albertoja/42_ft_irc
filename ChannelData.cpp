@@ -189,7 +189,7 @@ void 	ChannelData::deleteUserOper(ClientData *client)
 			if ((*it) == client)
 			{
 				this->_operatorsVec.erase(it);
-				this->sendToChannel(_clientsVec[0], makeChanMsg(_clientsVec[0], "MODE " + this->getChannelName(), "-o " + _clientsVec[0]->getNickName()), true);
+				this->sendToChannel(_clientsVec[0], makeChanMsg(_clientsVec[0], "MODE " + this->getChannelName(), "-o " + _clientsVec[0]->getNickName()), false);
 				return;
 			}
 		}

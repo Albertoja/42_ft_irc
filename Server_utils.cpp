@@ -133,17 +133,12 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
             }
         }
         // Eliminar al usuario de los canales
-        for (std::vector<ChannelData*>::iterator it = channel_vec.begin(); it != channel_vec.end();)
+        for (std::vector<ChannelData*>::iterator it = channel_vec.begin(); it != channel_vec.end(); ++it)
         {
-            if ((*it)->deleteUser(it_client))
+            if((*it)->deleteUser(it_client))
             {
                 std::cerr << RED << "Client " << it_client->getNickName() << " left the channel " << (*it)->getChannelName() << NOCOLOR << std::endl;
                 delete *it;
-                it = channel_vec.erase(it); // Erase devuelve el siguiente iterador
-            }
-            else
-            {
-                ++it;
             }
         }
         // Eliminar el cliente del vector clients_vec
