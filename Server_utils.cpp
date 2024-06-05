@@ -133,12 +133,16 @@ void	Server::deleteClient(size_t socket_num, ClientData *it_client)
             }
         }
         // Eliminar al usuario de los canales
-        for (std::vector<ChannelData*>::iterator it = channel_vec.begin(); it != channel_vec.end(); ++it)
+        for (std::vector<ChannelData*>::iterator it = channel_vec.begin(); it != channel_vec.end();)
         {
-            if((*it)->deleteUser(it_client))
+            if ((*it)->deleteUser(it_client))
             {
-                std::cerr << RED << "Client " << it_client->getNickName() << " left the channel " << (*it)->getChannelName() << NOCOLOR << std::endl;
                 delete *it;
+                it = channel_vec.erase(it); // Erase devuelve el siguiente iterador
+            }
+            else
+            {
+                ++it;
             }
         }
         // Eliminar el cliente del vector clients_vec
@@ -271,11 +275,16 @@ void	Server::processChanMsg(ClientData *sender)
 {
 	ChannelData *chan = findChannel(args[1]);
     std::string message;
+    if(!sender)
+        return;
+    if (args.size() < 3) {
+        sendToUser(sender, makeUserMsg(sender, ERR_NEEDMOREPARAMS, "Not enough arguments"));
+        return;
+    }
     if(args[2][0] != ':')
         args[2] = ":" + args[2];
     for (size_t i = 0; i < args.size(); ++i) 
     {
-        std::cout << args[i] << std::endl;
         message += args[i];
         if (i < args.size() - 1) 
         {

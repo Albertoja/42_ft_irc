@@ -1,12 +1,11 @@
 #include "Server.hpp"
 
 
-int Server::firstCommand(ClientData *client) 
+int Server::firstCommand(ClientData *client, std::string lines) 
 {
     std::vector<ClientData*>::iterator it;
-
-    args = splitString(client->getOldMsg(), " \r\n");
     client->setOldMsg("");
+    args = splitString(lines, " \r\n");
     if (!args.empty() && client != NULL) 
     {
         if(args.size() == 1)
@@ -176,6 +175,10 @@ int Server::processCommandOper(ClientData *client)
         {
             return 1;
         }
+        else if(ircCommand == "CAP")
+        {
+            return 1;
+        }
         else if (ircCommand == "MODE")
         {
             if (args.size() < 3)
@@ -271,9 +274,9 @@ int Server::processCommandOper(ClientData *client)
     return (0);
 }
 
-int Server::processCommand(ClientData *client, size_t socket_num) 
+int Server::processCommand(ClientData *client, size_t socket_num, std::string lines) 
 {
-        args = splitString(client->getOldMsg(), " \r\n");
+        args = splitString(lines, " \r\n");
         client->setOldMsg("");
         if(processCommandOper(client) == 1)
             return (0);

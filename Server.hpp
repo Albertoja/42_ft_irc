@@ -17,9 +17,9 @@ class Server
         int create_serversocket();
         bool CheckPassword(std::string buffer);
         bool CheckNickName(char* buffer);
-        int processCommand(ClientData *client, size_t socket_num);
+        int processCommand(ClientData *client, size_t socket_num, std::string lines);
         int processCommandOper(ClientData *client);
-        int firstCommand(ClientData *client);
+        int firstCommand(ClientData *client, std::string lines);
         int suCommand(const std::string& command, std::vector<ClientData>::iterator it_client);
         ClientData *find_ClientData_Socket(int fd);
         ClientData	*find_ClientData_Socket_login(int fd);
@@ -40,6 +40,7 @@ class Server
         void processChanMsg(ClientData *sender);
         ChannelData	*findChannel(std::string str);
         void checkFirst(ClientData *client);
+        int contLines( std::string& cadena);
 
     private:
         Server(const Server &other);

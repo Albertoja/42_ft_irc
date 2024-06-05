@@ -13,8 +13,8 @@ void Server::CloseServer()
     //elimino el vector de los canales
     for (std::vector<ChannelData*>::iterator it = channel_vec.begin(); it != channel_vec.end(); ++it)
         delete *it;
-    channel_vec.clear();
     std::vector<ChannelData*>().swap(channel_vec);
+    channel_vec.clear();
 
     //cierro todos los sockets y elimino su vector
     for(size_t socket_num = 0; socket_num < _sockets.size(); socket_num++)

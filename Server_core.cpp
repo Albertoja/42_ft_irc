@@ -23,6 +23,17 @@ Server &Server::operator=(const Server &other)
     return(*this);
 }
 
+int Server::contLines( std::string& cadena) 
+{
+    int contador = 0;
+    for (size_t i = 0; i < cadena.length(); ++i) {
+        if (cadena[i] == '\n') {
+            contador++;
+        }
+    }
+    return contador;
+}
+
 int Server::CreateNewUser(struct sockaddr_storage client_addr, int server_socket)
 {
     int client_socket;
@@ -50,26 +61,39 @@ int Server::ReceiveDataClient_login(size_t socket_num, std::string line)
     it_client->setOldMsg(it_client->getOldMsg() + line);
     if (!it_client->getOldMsg().empty() && it_client->getOldMsg()[it_client->getOldMsg().size() - 1] == '\n') 
     {
-        if(firstCommand(it_client) == 0)
+        std::string lines_str = it_client->getOldMsg();
+        int lines_n = contLines(lines_str);
+        if(lines_n > 0)
+            lines_n -= 1;
+        lines = splitString(lines_str, "\n");
+        int a = 0;
+        while(lines_n >= a)
         {
-                if(it_client->getfirstLogin() == true && it_client->getAll() == true)
-                {
-                    
-                    it_client->setfirstLogin(false);
-                    std::cout << GREEN << "New user connected" << NOCOLOR << std::endl;
-                    clients_vec.push_back(it_client);
-                    for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
+            if(firstCommand(it_client, lines[a]) == 0)
+            {
+                    if(it_client->getfirstLogin() == true && it_client->getAll() == true)
                     {
-                        if ((*it) == it_client)
+                        
+                        it_client->setfirstLogin(false);
+                        std::cout << GREEN << "New user connected" << NOCOLOR << std::endl;
+                        clients_vec.push_back(it_client);
+                        for (std::vector<ClientData*>::iterator it = clients_vec_login.begin(); it != clients_vec_login.end(); ++it)
                         {
-                            clients_vec_login.erase(it);
-                            break;
+                            if ((*it) == it_client)
+                            {
+                                clients_vec_login.erase(it);
+                                break;
+                            }
                         }
+                        sendWelcomeMessageToUser(it_client);
+                        lines.clear();
+                        return(0);
                     }
-                    sendWelcomeMessageToUser(it_client);
-                }
+            }
+            a++;
         }
     }
+    lines.clear();
     return 0;
 }
 
@@ -77,7 +101,6 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
 {
     if (line.empty())
         return(0);
-    args = splitString(line, " \r\n");
     ClientData *it_client = find_ClientData_Socket(_sockets[socket_num].fd);
     if(it_client == NULL)
     {
@@ -99,14 +122,26 @@ int Server::ReceiveDataClient(size_t socket_num, std::string line, int bytes)
         it_client->setOldMsg(it_client->getOldMsg() + line);
         if (!it_client->getOldMsg().empty() && it_client->getOldMsg()[it_client->getOldMsg().size() - 1] == '\n') 
         {
-            if(processCommand(it_client, socket_num) != 0)
+            std::string lines_str = it_client->getOldMsg();
+            int lines_n = contLines(lines_str);
+            if(lines_n > 0)
+                lines_n -= 1;
+            lines = splitString(lines_str, "\n");
+            int a = 0;
+            while(lines_n >= a)
             {
-                args.clear();
-                return(2);
+                if(processCommand(it_client, socket_num, lines[a]) != 0)
+                {
+                    args.clear();
+                    lines.clear();
+                    return(1);
+                }
+                a++;
             }
         }
     }
     args.clear();
+    lines.clear();
     return(0);
 }
 
@@ -131,16 +166,6 @@ void Server::createChanels()
 
 
 
-int contLines( std::string& cadena) 
-{
-    int contador = 0;
-    for (size_t i = 0; i < cadena.length(); ++i) {
-        if (cadena[i] == '\n') {
-            contador++;
-        }
-    }
-    return contador;
-}
 
 int Server::Start()
 {
@@ -181,7 +206,6 @@ int Server::Start()
                 {
                     int bytes;
                     bytes = recv(_sockets[socket_num].fd , buffer, BUFFER_SIZE, 0);
-                    std::cout << bytes << std::endl;
                     ClientData *it_client;
                     it_client = find_ClientData_Socket(_sockets[socket_num].fd);
                     if(!it_client)
@@ -195,13 +219,14 @@ int Server::Start()
                     {
                         break;
                     }
+                    buffer[bytes] = '\0';
                     std::string str;
                     str.assign(buffer, 0, bytes);
                     int lines_n = contLines(str);
                     if(lines_n > 0)
                         lines_n -= 1;
                     lines = splitString(str, "\n");
-                    i = ReceiveDataClient(socket_num, str, bytes);
+                    i = ReceiveDataClient(socket_num, (str), bytes);
                     if(i == 2)
                     {
                         lines.clear();
